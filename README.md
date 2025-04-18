@@ -101,6 +101,6 @@ This extension contributes the following settings:
 
 ## About the Author
 
-This extension is developed and maintained by Romy Rianata. For support, feature requests, or bug reports, please visit the [GitHub repository](https://github.com/RomyRianata/fix-augment).
+This extension is developed and maintained by Romy Rianata. For support, feature requests, or bug reports, please visit the [GitHub repository](https://github.com/MrXploisLite/fix-augment).
 
 **Enjoy using Fix Augment!**
