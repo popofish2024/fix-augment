@@ -1,11 +1,11 @@
 {
   "name": "fix-augment",
   "displayName": "Fix Augment",
-  "description": "Enhanced Augment extension with improved formatting and features by Romy Rianata",
+  "description": "Enhanced Augment extension with improved formatting and features by MrXploisLite",
   "version": "1.1.1",
-  "publisher": "RomyRianata",
+  "publisher": "MrXploisLite",
   "author": {
-    "name": "Romy Rianata"
+    "name": "MrXploisLite"
   },
   "repository": {
     "type": "git",
