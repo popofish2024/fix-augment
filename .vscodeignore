@@ -1,0 +1,24 @@
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/eslint.config.mjs
+**/*.map
+**/*.ts
+**/.vscode-test.*
+
+# Exclude unnecessary files from node_modules
+node_modules/highlight.js/es/**
+node_modules/highlight.js/lib/languages/**
+node_modules/highlight.js/scss/**
+node_modules/highlight.js/styles/**
+node_modules/highlight.js/CHANGES.md
+node_modules/highlight.js/SUPPORTED_LANGUAGES.md
+node_modules/highlight.js/VERSION_10_UPGRADE.md
+node_modules/highlight.js/VERSION_11_UPGRADE.md
+node_modules/marked/bin/**
+node_modules/marked/lib/**
+node_modules/marked/man/**

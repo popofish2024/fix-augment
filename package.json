@@ -1,0 +1,206 @@
+{
+  "name": "fix-augment",
+  "displayName": "Fix Augment",
+  "description": "Enhanced Augment extension with improved formatting and features by Romy Rianata",
+  "version": "1.1.1",
+  "publisher": "RomyRianata",
+  "author": {
+    "name": "Romy Rianata"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RomyRianata/fix-augment"
+  },
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fix-augment.enhanceInput",
+        "title": "Augment: Enhance Input"
+      },
+      {
+        "command": "fix-augment.formatOutput",
+        "title": "Augment: Format Output"
+      },
+      {
+        "command": "fix-augment.toggleEnhancement",
+        "title": "Augment: Toggle Enhancement"
+      },
+      {
+        "command": "fix-augment.smartChunk",
+        "title": "Augment: Smart Chunk Large Input"
+      },
+      {
+        "command": "fix-augment.applyTheme",
+        "title": "Augment: Apply Syntax Theme"
+      },
+      {
+        "command": "fix-augment.optimizeCodeBlocks",
+        "title": "Augment: Optimize Code Blocks"
+      },
+      {
+        "command": "fix-augment.setApiKey",
+        "title": "Augment: Set API Key"
+      },
+      {
+        "command": "fix-augment.toggleLimitBypass",
+        "title": "Augment: Toggle Limit Bypass"
+      },
+      {
+        "command": "fix-augment.resetUsageCounter",
+        "title": "Augment: Reset Usage Counter"
+      }
+    ],
+    "configuration": {
+      "title": "Fix Augment",
+      "properties": {
+        "fixAugment.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the Fix Augment extension"
+        },
+        "fixAugment.maxInputSize": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum size of input to process at once (in characters)"
+        },
+        "fixAugment.outputFormat": {
+          "type": "string",
+          "enum": ["default", "enhanced", "markdown", "html"],
+          "default": "enhanced",
+          "description": "Format to use for Augment outputs"
+        },
+        "fixAugment.autoFormatOutput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically format Augment outputs as they appear"
+        },
+        "fixAugment.syntaxTheme": {
+          "type": "string",
+          "enum": ["default", "github", "monokai", "dracula", "nord"],
+          "default": "github",
+          "description": "Syntax highlighting theme for code blocks"
+        },
+        "fixAugment.smartChunking": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use smart chunking to preserve context when splitting large inputs"
+        },
+        "fixAugment.preserveCodeBlocks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep code blocks intact when chunking large inputs"
+        },
+        "fixAugment.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for Augment (for future use - Augment currently doesn't require an API key)"
+        },
+        "fixAugment.bypassLimits": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable features to bypass Augment usage limits (for future use - Augment currently has unlimited usage)"
+        },
+        "fixAugment.requestDelay": {
+          "type": "number",
+          "default": 500,
+          "description": "Delay between requests in milliseconds (for future use - to avoid potential rate limiting)"
+        },
+        "fixAugment.maxRequestsPerSession": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of requests per session before auto-reset (for future use - Augment currently has no request limits)"
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "fix-augment.enhanceInput",
+          "when": "editorHasSelection",
+          "group": "augment@1"
+        },
+        {
+          "command": "fix-augment.formatOutput",
+          "when": "editorHasSelection",
+          "group": "augment@2"
+        },
+        {
+          "command": "fix-augment.smartChunk",
+          "when": "editorHasSelection",
+          "group": "augment@3"
+        },
+        {
+          "command": "fix-augment.optimizeCodeBlocks",
+          "when": "editorHasSelection",
+          "group": "augment@4"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "fix-augment.enhanceInput",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.formatOutput",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.smartChunk",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.optimizeCodeBlocks",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.applyTheme"
+        },
+        {
+          "command": "fix-augment.toggleEnhancement"
+        },
+        {
+          "command": "fix-augment.setApiKey"
+        },
+        {
+          "command": "fix-augment.toggleLimitBypass"
+        },
+        {
+          "command": "fix-augment.resetUsageCounter"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "marked": "^12.0.0",
+    "highlight.js": "^11.9.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.99.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
