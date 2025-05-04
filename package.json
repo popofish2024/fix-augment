@@ -12,7 +12,7 @@
     "url": "https://github.com/MrXploisLite/fix-augment"
   },
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.96.2"
   },
   "categories": [
     "Other"
@@ -193,7 +193,7 @@
     "highlight.js": "^11.9.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.99.0",
+    "@types/vscode": "^1.96.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@typescript-eslint/eslint-plugin": "^8.28.0",

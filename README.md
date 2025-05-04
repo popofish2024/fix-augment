@@ -19,7 +19,7 @@ An enhanced unofficial extension for the Augment VSCode extension by Romy Rianat
 
 ## Requirements
 
-- Visual Studio Code 1.99.0 or higher
+- Visual Studio Code 1.96.2 or higher
 - Augment extension (augment.vscode-augment)
 
 ## Extension Settings

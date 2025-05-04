@@ -3,3 +3,7 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+# SpecStory explanation file
+.specstory
+# SpecStory explanation file
+.specstory/.what-is-this.md
