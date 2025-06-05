@@ -57,6 +57,18 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 2.0.0
+
+- **Major Update**: Complete modernization for Augment's 2025 feature set
+- **Agent Enhancement**: Added Agent workflow optimization with context injection
+- **Next Edit Support**: Added Next Edit context optimization for better suggestions
+- **Instructions Formatting**: Added automatic formatting for natural language instructions
+- **Removed Obsolete Features**: Removed usage tracking, limit bypass, and API key management (no longer needed)
+- **Updated Output Detection**: Enhanced detection for modern Augment output formats
+- **Improved Integration**: Better integration with Agent, Chat, Next Edit, Instructions, and Completions
+- **Streamlined UI**: Cleaner interface focused on current Augment capabilities
+- **Enhanced Performance**: Optimized for better performance and reliability
+
 ### 1.1.0
 
 - Added API key management with secure storage
