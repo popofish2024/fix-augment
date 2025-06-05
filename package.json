@@ -1,8 +1,8 @@
 {
   "name": "fix-augment",
   "displayName": "Fix Augment",
-  "description": "Enhanced Augment extension with improved formatting and features by MrXploisLite",
-  "version": "1.1.1",
+  "description": "Enhanced Augment extension with improved Agent workflows, formatting, and productivity features by MrXploisLite",
+  "version": "2.0.0",
   "publisher": "MrXploisLite",
   "author": {
     "name": "MrXploisLite"
@@ -16,6 +16,15 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "augment",
+    "ai",
+    "agent",
+    "chat",
+    "completions",
+    "productivity",
+    "formatting"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -48,16 +57,16 @@
         "title": "Augment: Optimize Code Blocks"
       },
       {
-        "command": "fix-augment.setApiKey",
-        "title": "Augment: Set API Key"
+        "command": "fix-augment.enhanceAgent",
+        "title": "Augment: Enhance Agent Workflow"
       },
       {
-        "command": "fix-augment.toggleLimitBypass",
-        "title": "Augment: Toggle Limit Bypass"
+        "command": "fix-augment.formatInstructions",
+        "title": "Augment: Format Instructions"
       },
       {
-        "command": "fix-augment.resetUsageCounter",
-        "title": "Augment: Reset Usage Counter"
+        "command": "fix-augment.optimizeNextEdit",
+        "title": "Augment: Optimize Next Edit Context"
       }
     ],
     "configuration": {
@@ -100,25 +109,20 @@
           "default": true,
           "description": "Keep code blocks intact when chunking large inputs"
         },
-        "fixAugment.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "API key for Augment (for future use - Augment currently doesn't require an API key)"
-        },
-        "fixAugment.bypassLimits": {
+        "fixAugment.enhanceAgent": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable features to bypass Augment usage limits (for future use - Augment currently has unlimited usage)"
+          "default": true,
+          "description": "Enhance Agent workflows with better context and formatting"
         },
-        "fixAugment.requestDelay": {
-          "type": "number",
-          "default": 500,
-          "description": "Delay between requests in milliseconds (for future use - to avoid potential rate limiting)"
+        "fixAugment.optimizeNextEdit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Optimize Next Edit suggestions with enhanced context"
         },
-        "fixAugment.maxRequestsPerSession": {
-          "type": "number",
-          "default": 50,
-          "description": "Maximum number of requests per session before auto-reset (for future use - Augment currently has no request limits)"
+        "fixAugment.formatInstructions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically format Instructions for better clarity"
         }
       }
     },
@@ -143,6 +147,11 @@
           "command": "fix-augment.optimizeCodeBlocks",
           "when": "editorHasSelection",
           "group": "augment@4"
+        },
+        {
+          "command": "fix-augment.formatInstructions",
+          "when": "editorHasSelection",
+          "group": "augment@5"
         }
       ],
       "commandPalette": [
@@ -163,19 +172,20 @@
           "when": "editorHasSelection"
         },
         {
+          "command": "fix-augment.formatInstructions",
+          "when": "editorHasSelection"
+        },
+        {
           "command": "fix-augment.applyTheme"
         },
         {
           "command": "fix-augment.toggleEnhancement"
         },
         {
-          "command": "fix-augment.setApiKey"
+          "command": "fix-augment.enhanceAgent"
         },
         {
-          "command": "fix-augment.toggleLimitBypass"
-        },
-        {
-          "command": "fix-augment.resetUsageCounter"
+          "command": "fix-augment.optimizeNextEdit"
         }
       ]
     }

@@ -1,9 +1,10 @@
 # Fix Augment
 
-An enhanced unofficial extension for the Augment VSCode extension by Romy Rianata. This extension significantly improves the input and output capabilities of the Augment extension, allowing for larger inputs, better formatted outputs, and a more seamless experience.
+An enhanced unofficial extension for the Augment VSCode extension by MrXploisLite. This extension significantly improves the Agent workflows, input/output capabilities, and overall experience when working with Augment's powerful AI features including Agent, Chat, Next Edit, Instructions, and Completions.
 
 ## Features
 
+### Core Enhancements
 - **Enhanced Input Processing**: Automatically chunks large inputs to make them more digestible for Augment
 - **Smart Chunking**: Preserves context and code blocks when splitting large inputs
 - **Improved Output Formatting**: Formats Augment's output with better code highlighting and organization
@@ -11,11 +12,20 @@ An enhanced unofficial extension for the Augment VSCode extension by Romy Rianat
 - **Multiple Syntax Themes**: Choose from various syntax highlighting themes
 - **Auto-Formatting**: Automatically formats Augment outputs as they appear
 - **Code Block Optimization**: Special handling for code blocks to maintain their structure
-- **API Key Management**: Securely store and manage your Augment API key (for future use - Augment currently doesn't require an API key)
-- **Usage Limit Bypass**: Features to help manage and bypass potential future Augment usage limits (Augment currently has unlimited usage)
-- **Usage Tracking**: Monitor your Augment usage with a convenient status bar counter (for informational purposes)
-- **Auto-Reset**: Automatically reset usage counters to avoid potential future limits
+
+### Agent Workflow Enhancements
+- **Agent Context Enhancement**: Automatically adds workspace and file context to improve Agent understanding
+- **Workflow Optimization**: Streamlines Agent tasks with better context markers and formatting
+- **Smart Context Injection**: Provides relevant workspace information to enhance Agent performance
+
+### Next Edit & Instructions Support
+- **Next Edit Context Optimization**: Enhances context around cursor position for better Next Edit suggestions
+- **Instructions Formatting**: Automatically formats natural language instructions for better clarity
+- **Enhanced Integration**: Works seamlessly with Augment's latest features
+
+### Productivity Features
 - **Highly Customizable**: Configure all aspects of the extension to suit your workflow
+- **Modern Integration**: Built for Augment's 2025 feature set including Agent, Chat, Next Edit, Instructions, and Completions
 
 ## Requirements
 
@@ -26,6 +36,7 @@ An enhanced unofficial extension for the Augment VSCode extension by Romy Rianat
 
 This extension contributes the following settings:
 
+### Core Settings
 - `fixAugment.enabled`: Enable or disable the Fix Augment extension
 - `fixAugment.maxInputSize`: Maximum size of input to process at once (in characters)
 - `fixAugment.outputFormat`: Format to use for Augment outputs (default, enhanced, markdown, html)
@@ -33,10 +44,11 @@ This extension contributes the following settings:
 - `fixAugment.syntaxTheme`: Syntax highlighting theme for code blocks (default, github, monokai, dracula, nord)
 - `fixAugment.smartChunking`: Use smart chunking to preserve context when splitting large inputs
 - `fixAugment.preserveCodeBlocks`: Keep code blocks intact when chunking large inputs
-- `fixAugment.apiKey`: API key for Augment (for future use - Augment currently doesn't require an API key)
-- `fixAugment.bypassLimits`: Enable features to bypass potential future Augment usage limits (Augment currently has unlimited usage)
-- `fixAugment.requestDelay`: Delay between requests in milliseconds (for future use - to avoid potential rate limiting)
-- `fixAugment.maxRequestsPerSession`: Maximum number of requests per session before auto-reset (for future use)
+
+### Agent & Workflow Settings
+- `fixAugment.enhanceAgent`: Enhance Agent workflows with better context and formatting
+- `fixAugment.optimizeNextEdit`: Optimize Next Edit suggestions with enhanced context
+- `fixAugment.formatInstructions`: Automatically format Instructions for better clarity
 
 ## Known Issues
 

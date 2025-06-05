@@ -4,21 +4,24 @@ import hljs from 'highlight.js';
 
 // Status bar items
 let statusBarItem: vscode.StatusBarItem;
-let limitBypassStatusBarItem: vscode.StatusBarItem;
-let usageCounterStatusBarItem: vscode.StatusBarItem;
 
 // Flags to track extension state
 let enhancementActive = true;
-let limitBypassActive = false;
-
-// Usage tracking
-let requestCounter = 0;
-let sessionStartTime = Date.now();
 
 // Interface for the Augment extension API (if we can access it)
 interface AugmentExtension {
   sendInput?: (input: string) => Promise<string>;
   formatOutput?: (output: string) => string;
+  agent?: {
+    enhance?: (context: string) => Promise<string>;
+    optimize?: (workflow: string) => Promise<string>;
+  };
+  nextEdit?: {
+    optimize?: (context: string) => Promise<string>;
+  };
+  instructions?: {
+    format?: (instruction: string) => Promise<string>;
+  };
 }
 
 /**
@@ -32,13 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
   console.log('Fix Augment extension is now active!');
 
-  // Initialize usage counter
-  requestCounter = context.globalState.get('requestCounter', 0);
-  sessionStartTime = context.globalState.get('sessionStartTime', Date.now());
-
-  // Load limit bypass state
-  limitBypassActive = context.globalState.get('limitBypassActive', false);
-
   // Create main status bar item
   statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.text = '$(megaphone) Augment Fix: ON';
@@ -46,18 +42,6 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.command = 'fix-augment.toggleEnhancement';
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
-
-  // Create limit bypass status bar item
-  limitBypassStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
-  updateLimitBypassStatusBar();
-  limitBypassStatusBarItem.show();
-  context.subscriptions.push(limitBypassStatusBarItem);
-
-  // Create usage counter status bar item
-  usageCounterStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 98);
-  updateUsageCounterStatusBar();
-  usageCounterStatusBarItem.show();
-  context.subscriptions.push(usageCounterStatusBarItem);
 
   // Register commands
   context.subscriptions.push(
@@ -67,9 +51,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('fix-augment.smartChunk', smartChunkInput),
     vscode.commands.registerCommand('fix-augment.applyTheme', applyTheme),
     vscode.commands.registerCommand('fix-augment.optimizeCodeBlocks', optimizeCodeBlocks),
-    vscode.commands.registerCommand('fix-augment.setApiKey', setApiKey),
-    vscode.commands.registerCommand('fix-augment.toggleLimitBypass', toggleLimitBypass),
-    vscode.commands.registerCommand('fix-augment.resetUsageCounter', resetUsageCounter)
+    vscode.commands.registerCommand('fix-augment.enhanceAgent', enhanceAgentWorkflow),
+    vscode.commands.registerCommand('fix-augment.formatInstructions', formatInstructions),
+    vscode.commands.registerCommand('fix-augment.optimizeNextEdit', optimizeNextEditContext)
   );
 
   // Listen for text document changes to intercept Augment output
@@ -79,9 +63,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Try to find the Augment extension
   checkForAugmentExtension();
-
-  // Check if we need to auto-reset the counter
-  checkAndResetCounter(context);
 }
 
 /**
@@ -91,11 +72,7 @@ async function checkForAugmentExtension(): Promise<AugmentExtension | undefined>
   const augmentExtension = vscode.extensions.getExtension('augment.vscode-augment');
 
   if (augmentExtension) {
-    vscode.window.showInformationMessage('Augment extension detected. Fix Augment is ready!');
-
-    // Note: We no longer prompt for API key by default since Augment currently doesn't require one
-    // The API key setting is still available for future use when Augment might require it
-
+    vscode.window.showInformationMessage('Augment extension detected. Fix Augment is ready with enhanced Agent, Chat, and Next Edit support!');
     return augmentExtension.exports as AugmentExtension;
   } else {
     vscode.window.showWarningMessage('Augment extension not found. Some features may not work properly.');
@@ -118,9 +95,16 @@ async function handleTextDocumentChange(event: vscode.TextDocumentChangeEvent): 
     return;
   }
 
-  // Look for patterns that might indicate Augment output
+  // Look for patterns that might indicate Augment output (updated for 2025 Augment formats)
   const text = changes[0].text;
-  if (text.includes('```') || text.includes('function_results') || text.includes('augment')) {
+  if (text.includes('```') ||
+      text.includes('function_results') ||
+      text.includes('<augment_code_snippet') ||
+      text.includes('Agent:') ||
+      text.includes('Next Edit:') ||
+      text.includes('Instructions:') ||
+      text.includes('Chat:')) {
+
     // This might be Augment output, try to enhance it
     const enhancedOutput = await formatOutput(text);
 
@@ -136,25 +120,6 @@ async function handleTextDocumentChange(event: vscode.TextDocumentChangeEvent): 
         editor.edit(editBuilder => {
           editBuilder.replace(range, enhancedOutput);
         });
-      }
-    }
-
-    // Check if this is an Augment response and increment the counter
-    if (text.includes('function_results') ||
-        (text.includes('```') && text.includes('augment')) ||
-        text.includes('<augment_code_snippet')) {
-      // This is likely an Augment response
-      incrementUsageCounter();
-
-      // If limit bypass is active, check if we need to add a delay
-      if (limitBypassActive) {
-        const config = vscode.workspace.getConfiguration('fixAugment');
-        const requestDelay = config.get<number>('requestDelay') || 500;
-
-        // Add a small delay to avoid rate limiting
-        if (requestDelay > 0) {
-          await new Promise(resolve => setTimeout(resolve, requestDelay));
-        }
       }
     }
   }
@@ -739,194 +704,160 @@ async function optimizeCodeBlocks(): Promise<void> {
 }
 
 /**
- * Set the API key for Augment
+ * Enhance Agent workflow with better context and formatting
  */
-async function setApiKey(): Promise<void> {
-  // Get the current API key from secure storage
-  const config = vscode.workspace.getConfiguration('fixAugment');
-  const currentApiKey = config.get<string>('apiKey') || '';
-
-  // Show information about API key usage
-  await vscode.window.showInformationMessage(
-    'Note: Augment currently does not require an API key. This feature is for future use when Augment might require authentication.'
-  );
-
-  // Prompt for the new API key
-  const apiKey = await vscode.window.showInputBox({
-    prompt: 'Enter your Augment API key (for future use)',
-    placeHolder: 'API key (optional)',
-    password: true,
-    value: currentApiKey
-  });
-
-  if (apiKey === undefined) {
-    // User cancelled
+async function enhanceAgentWorkflow(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active editor found');
     return;
   }
 
-  if (apiKey) {
-    // Store the API key in settings
-    try {
-      await config.update('apiKey', apiKey, vscode.ConfigurationTarget.Global);
-      vscode.window.showInformationMessage('Augment API key saved successfully');
-    } catch (error) {
-      vscode.window.showErrorMessage(`Error saving API key: ${error}`);
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showErrorMessage('No text selected');
+    return;
+  }
+
+  const text = editor.document.getText(selection);
+  const config = vscode.workspace.getConfiguration('fixAugment');
+  const enhanceAgent = config.get<boolean>('enhanceAgent') || true;
+
+  if (!enhanceAgent) {
+    vscode.window.showInformationMessage('Agent enhancement is disabled in settings');
+    return;
+  }
+
+  try {
+    // Enhance the selected text for better Agent understanding
+    let enhancedText = text;
+
+    // Add context markers for Agent
+    enhancedText = `<!-- AGENT CONTEXT START -->\n${enhancedText}\n<!-- AGENT CONTEXT END -->`;
+
+    // Add file context if available
+    const fileName = editor.document.fileName;
+    const fileExtension = fileName.split('.').pop();
+    enhancedText = `<!-- FILE: ${fileName} (${fileExtension}) -->\n${enhancedText}`;
+
+    // Add workspace context
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+    if (workspaceFolder) {
+      enhancedText = `<!-- WORKSPACE: ${workspaceFolder.name} -->\n${enhancedText}`;
     }
-  } else {
-    // Clear the API key if empty
-    try {
-      await config.update('apiKey', '', vscode.ConfigurationTarget.Global);
-      vscode.window.showInformationMessage('Augment API key cleared');
-    } catch (error) {
-      vscode.window.showErrorMessage(`Error clearing API key: ${error}`);
+
+    // Replace the selected text
+    editor.edit(editBuilder => {
+      editBuilder.replace(selection, enhancedText);
+    });
+
+    vscode.window.showInformationMessage('Agent workflow enhanced with context');
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error enhancing Agent workflow: ${error}`);
+  }
+}
+
+/**
+ * Format Instructions for better clarity
+ */
+async function formatInstructions(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active editor found');
+    return;
+  }
+
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showErrorMessage('No text selected');
+    return;
+  }
+
+  const text = editor.document.getText(selection);
+  const config = vscode.workspace.getConfiguration('fixAugment');
+  const formatInstructions = config.get<boolean>('formatInstructions') || true;
+
+  if (!formatInstructions) {
+    vscode.window.showInformationMessage('Instructions formatting is disabled in settings');
+    return;
+  }
+
+  try {
+    // Format the instruction text for better clarity
+    let formattedText = text.trim();
+
+    // Add clear instruction markers
+    if (!formattedText.toLowerCase().startsWith('instruction:')) {
+      formattedText = `INSTRUCTION: ${formattedText}`;
     }
+
+    // Ensure proper formatting
+    formattedText = formattedText
+      .replace(/\s+/g, ' ')  // Normalize whitespace
+      .replace(/\. /g, '.\n\n')  // Add line breaks after sentences
+      .trim();
+
+    // Add context if this looks like a code modification instruction
+    if (formattedText.includes('modify') || formattedText.includes('change') || formattedText.includes('update')) {
+      formattedText += '\n\n<!-- Please maintain existing code style and patterns -->';
+    }
+
+    // Replace the selected text
+    editor.edit(editBuilder => {
+      editBuilder.replace(selection, formattedText);
+    });
+
+    vscode.window.showInformationMessage('Instructions formatted for clarity');
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error formatting instructions: ${error}`);
   }
 }
 
 /**
- * Toggle the limit bypass feature
+ * Optimize Next Edit context for better suggestions
  */
-function toggleLimitBypass(): void {
-  const context = getExtensionContext();
-  if (!context) {
-    vscode.window.showErrorMessage('Could not access extension context');
+async function optimizeNextEditContext(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active editor found');
     return;
   }
 
-  // Show information about limit bypass
-  if (!limitBypassActive) {
-    vscode.window.showInformationMessage(
-      'Note: Augment currently does not have usage limits. This feature is for future use when Augment might implement limits.'
-    );
-  }
-
-  limitBypassActive = !limitBypassActive;
-  context.globalState.update('limitBypassActive', limitBypassActive);
-
-  updateLimitBypassStatusBar();
-
-  if (limitBypassActive) {
-    vscode.window.showInformationMessage('Augment limit bypass is now active (for future use)');
-  } else {
-    vscode.window.showInformationMessage('Augment limit bypass is now inactive');
-  }
-}
-
-/**
- * Update the limit bypass status bar item
- */
-function updateLimitBypassStatusBar(): void {
-  if (limitBypassActive) {
-    limitBypassStatusBarItem.text = '$(zap) Limits: BYPASS (Future)';
-    limitBypassStatusBarItem.tooltip = 'Augment limit bypass is active (for future use). Click to toggle.';
-    limitBypassStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-  } else {
-    limitBypassStatusBarItem.text = '$(zap) Limits: NORMAL';
-    limitBypassStatusBarItem.tooltip = 'Augment limit bypass is inactive (for future use). Click to toggle.';
-    limitBypassStatusBarItem.backgroundColor = undefined;
-  }
-  limitBypassStatusBarItem.command = 'fix-augment.toggleLimitBypass';
-}
-
-/**
- * Reset the usage counter
- */
-function resetUsageCounter(): void {
-  const context = getExtensionContext();
-  if (!context) {
-    vscode.window.showErrorMessage('Could not access extension context');
-    return;
-  }
-
-  requestCounter = 0;
-  sessionStartTime = Date.now();
-
-  context.globalState.update('requestCounter', requestCounter);
-  context.globalState.update('sessionStartTime', sessionStartTime);
-
-  updateUsageCounterStatusBar();
-
-  vscode.window.showInformationMessage('Augment usage counter reset');
-}
-
-/**
- * Update the usage counter status bar item
- */
-function updateUsageCounterStatusBar(): void {
   const config = vscode.workspace.getConfiguration('fixAugment');
-  const maxRequests = config.get<number>('maxRequestsPerSession') || 50;
+  const optimizeNextEdit = config.get<boolean>('optimizeNextEdit') || true;
 
-  usageCounterStatusBarItem.text = `$(graph) Usage: ${requestCounter}/${maxRequests}`;
-  usageCounterStatusBarItem.tooltip = 'Augment usage counter. Click to reset.';
-  usageCounterStatusBarItem.command = 'fix-augment.resetUsageCounter';
-
-  // Change color when approaching the limit
-  if (requestCounter >= maxRequests * 0.8) {
-    usageCounterStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-  } else if (requestCounter >= maxRequests * 0.5) {
-    usageCounterStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-  } else {
-    usageCounterStatusBarItem.backgroundColor = undefined;
-  }
-}
-
-/**
- * Increment the usage counter
- */
-function incrementUsageCounter(): void {
-  const context = getExtensionContext();
-  if (!context) {
+  if (!optimizeNextEdit) {
+    vscode.window.showInformationMessage('Next Edit optimization is disabled in settings');
     return;
   }
 
-  requestCounter++;
-  context.globalState.update('requestCounter', requestCounter);
+  try {
+    // Get current cursor position and surrounding context
+    const position = editor.selection.active;
+    const document = editor.document;
 
-  updateUsageCounterStatusBar();
+    // Get context around cursor (5 lines before and after)
+    const startLine = Math.max(0, position.line - 5);
+    const endLine = Math.min(document.lineCount - 1, position.line + 5);
 
-  // Check if we need to auto-reset
-  checkAndResetCounter(context);
-}
+    const contextRange = new vscode.Range(startLine, 0, endLine, document.lineAt(endLine).text.length);
+    const contextText = document.getText(contextRange);
 
-/**
- * Check if we need to auto-reset the counter based on max requests
- */
-function checkAndResetCounter(context: vscode.ExtensionContext): void {
-  const config = vscode.workspace.getConfiguration('fixAugment');
-  const maxRequests = config.get<number>('maxRequestsPerSession') || 50;
+    // Add optimization comments for Next Edit
+    const optimizedContext = `/* NEXT EDIT CONTEXT OPTIMIZATION */\n${contextText}\n/* END CONTEXT */`;
 
-  // Auto-reset if we've reached the limit
-  if (requestCounter >= maxRequests && limitBypassActive) {
-    requestCounter = 0;
-    sessionStartTime = Date.now();
+    // Insert the optimized context at cursor
+    editor.edit(editBuilder => {
+      editBuilder.insert(position, `\n${optimizedContext}\n`);
+    });
 
-    context.globalState.update('requestCounter', requestCounter);
-    context.globalState.update('sessionStartTime', sessionStartTime);
-
-    updateUsageCounterStatusBar();
-
-    vscode.window.showInformationMessage('Augment usage counter auto-reset (limit reached)');
-  }
-
-  // Also check time-based reset (24 hours)
-  const oneDayMs = 24 * 60 * 60 * 1000;
-  if (Date.now() - sessionStartTime > oneDayMs) {
-    requestCounter = 0;
-    sessionStartTime = Date.now();
-
-    context.globalState.update('requestCounter', requestCounter);
-    context.globalState.update('sessionStartTime', sessionStartTime);
-
-    updateUsageCounterStatusBar();
+    vscode.window.showInformationMessage('Next Edit context optimized');
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error optimizing Next Edit context: ${error}`);
   }
 }
 
-/**
- * Get the extension context
- */
-function getExtensionContext(): vscode.ExtensionContext | undefined {
-  return extensionContext;
-}
+
 
 /**
  * Deactivate the extension
@@ -935,11 +866,5 @@ export function deactivate() {
   // Clean up resources
   if (statusBarItem) {
     statusBarItem.dispose();
-  }
-  if (limitBypassStatusBarItem) {
-    limitBypassStatusBarItem.dispose();
-  }
-  if (usageCounterStatusBarItem) {
-    usageCounterStatusBarItem.dispose();
   }
 }
