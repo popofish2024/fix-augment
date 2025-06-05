@@ -4,6 +4,40 @@ All notable changes to the "fix-augment" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.2.2] - 2025-01-28
+
+### Fixed - Dependency Resolution
+- **🔧 Dependencies**: Fixed missing 'marked' and 'highlight.js' dependencies causing extension activation failures
+- **📦 Package Management**: Ensured all required dependencies are properly installed and bundled
+- **🚀 Extension Activation**: Resolved "Cannot find module" errors preventing command registration
+- **✅ Command Registration**: Fixed 'fix-augment.showWelcome' and other commands not being available
+
+### Technical Improvements
+- **Better Dependency Management**: Proper installation and bundling of runtime dependencies
+- **Improved Error Handling**: Better error messages for missing dependencies
+- **Enhanced Build Process**: Verification of all required modules before packaging
+
+## [2.2.1] - 2025-01-28
+
+### Fixed - Critical UI Panel Issues
+- **🚨 Critical Bug**: Fixed HTML panel loading issues in packaged extension
+- **🎛️ Dashboard Tree View**: Fixed missing TreeDataProvider causing dashboard not to appear in Explorer panel
+- **📱 Welcome Screen**: Fixed welcome panel not showing after extension updates
+- **🔧 Build Process**: Fixed HTML files not being included in extension package
+- **📁 Resource Paths**: Fixed webview resource loading for both development and production environments
+
+### Technical Improvements
+- **Enhanced Error Handling**: Added robust error handling for HTML file loading with fallback inline HTML
+- **Improved Build Process**: Automatic webview file copying during build and package
+- **Better Resource Resolution**: Smart path resolution that works in both dev and packaged extension
+- **Tree Provider Implementation**: Added proper TreeDataProvider for dashboard view in Explorer panel
+- **Fallback UI**: Inline HTML fallback ensures UI always works even if external files fail to load
+
+### Developer Experience
+- **Better Debugging**: Enhanced console logging for troubleshooting UI issues
+- **Robust Packaging**: Improved packaging process to ensure all assets are included
+- **Cross-Platform Compatibility**: Fixed file copying scripts to work on both Windows and Unix systems
+
 ## [2.2.0] - 2025-06-05
 
 ### Added - Smart Context & Process Management

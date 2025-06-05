@@ -25,6 +25,98 @@ interface AugmentExtension {
   executeCommand?: (command: string, ...args: any[]) => Promise<any>;
 }
 
+// Dashboard tree item class
+class DashboardItem extends vscode.TreeItem {
+  constructor(
+    public readonly label: string,
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    public readonly command?: vscode.Command,
+    public readonly iconPath?: vscode.ThemeIcon
+  ) {
+    super(label, collapsibleState);
+    this.tooltip = this.label;
+    this.contextValue = 'dashboardItem';
+  }
+}
+
+// Dashboard tree data provider
+class DashboardProvider implements vscode.TreeDataProvider<DashboardItem> {
+  private _onDidChangeTreeData: vscode.EventEmitter<DashboardItem | undefined | null | void> = new vscode.EventEmitter<DashboardItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<DashboardItem | undefined | null | void> = this._onDidChangeTreeData.event;
+
+  refresh(): void {
+    this._onDidChangeTreeData.fire();
+  }
+
+  getTreeItem(element: DashboardItem): vscode.TreeItem {
+    return element;
+  }
+
+  getChildren(element?: DashboardItem): Thenable<DashboardItem[]> {
+    if (!element) {
+      // Root items
+      return Promise.resolve([
+        new DashboardItem(
+          '🎛️ Open Dashboard',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'fix-augment.showDashboard',
+            title: 'Open Dashboard'
+          },
+          new vscode.ThemeIcon('dashboard')
+        ),
+        new DashboardItem(
+          '📱 Welcome & Changelog',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'fix-augment.showWelcome',
+            title: 'Show Welcome'
+          },
+          new vscode.ThemeIcon('info')
+        ),
+        new DashboardItem(
+          '🧠 Context Health',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'fix-augment.contextHealth',
+            title: 'Check Context Health'
+          },
+          new vscode.ThemeIcon('pulse')
+        ),
+        new DashboardItem(
+          '📁 Validate File Context',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'fix-augment.validateFileContext',
+            title: 'Validate File Context'
+          },
+          new vscode.ThemeIcon('file-code')
+        ),
+        new DashboardItem(
+          '🔧 Optimize Prompt',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'fix-augment.optimizePrompt',
+            title: 'Optimize Prompt'
+          },
+          new vscode.ThemeIcon('tools')
+        ),
+        new DashboardItem(
+          '⚙️ Settings',
+          vscode.TreeItemCollapsibleState.None,
+          {
+            command: 'workbench.action.openSettings',
+            title: 'Open Settings',
+            arguments: ['fixAugment']
+          },
+          new vscode.ThemeIcon('settings-gear')
+        )
+      ]);
+    }
+    return Promise.resolve([]);
+  }
+}
+
 // Common Augment issues and their patterns
 const AUGMENT_ISSUES = {
   DOUBLE_QUOTE_ERROR: /We encountered an issue sending your message/i,
@@ -44,6 +136,9 @@ export function activate(context: vscode.ExtensionContext) {
   // extensionContext = context;
   console.log('Fix Augment extension is now active!');
 
+  // Set context for view visibility
+  vscode.commands.executeCommand('setContext', 'fixAugment.enabled', true);
+
   // Create main status bar item
   statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
   statusBarItem.text = '$(megaphone) Augment Fix: ON';
@@ -51,6 +146,13 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.command = 'fix-augment.toggleEnhancement';
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
+
+  // Register dashboard tree data provider
+  const dashboardProvider = new DashboardProvider();
+  vscode.window.registerTreeDataProvider('fixAugmentDashboard', dashboardProvider);
+  context.subscriptions.push(
+    vscode.commands.registerCommand('fix-augment.refreshDashboardTree', () => dashboardProvider.refresh())
+  );
 
   // Register commands
   context.subscriptions.push(
@@ -297,10 +399,12 @@ function toggleEnhancement(): void {
   if (enhancementActive) {
     statusBarItem.text = '$(megaphone) Augment Fix: ON';
     statusBarItem.tooltip = 'Fix Augment is active. Click to toggle.';
+    vscode.commands.executeCommand('setContext', 'fixAugment.enabled', true);
     vscode.window.showInformationMessage('Fix Augment is now active');
   } else {
     statusBarItem.text = '$(megaphone) Augment Fix: OFF';
     statusBarItem.tooltip = 'Fix Augment is inactive. Click to toggle.';
+    vscode.commands.executeCommand('setContext', 'fixAugment.enabled', false);
     vscode.window.showInformationMessage('Fix Augment is now inactive');
   }
 }
@@ -971,11 +1075,14 @@ async function checkAndShowWelcome(context: vscode.ExtensionContext): Promise<vo
 
   if (showWelcomeOnUpdate) {
     const lastVersion = context.globalState.get<string>('lastVersion', '0.0.0');
-    const currentVersion = '2.2.0';
+    const currentVersion = '2.2.1';
 
     if (lastVersion !== currentVersion) {
       await context.globalState.update('lastVersion', currentVersion);
-      showWelcome(context);
+      // Add a small delay to ensure extension is fully loaded
+      setTimeout(() => {
+        showWelcome(context);
+      }, 1000);
     }
   }
 }
@@ -995,7 +1102,10 @@ function showWelcome(context: vscode.ExtensionContext): void {
     vscode.ViewColumn.One,
     {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))]
+      localResourceRoots: [
+        vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview')),
+        vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))
+      ]
     }
   );
 
@@ -1039,7 +1149,10 @@ function showDashboard(context: vscode.ExtensionContext): void {
     vscode.ViewColumn.One,
     {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))]
+      localResourceRoots: [
+        vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview')),
+        vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))
+      ]
     }
   );
 
@@ -1093,23 +1206,312 @@ function showDashboard(context: vscode.ExtensionContext): void {
  * Get welcome HTML content
  */
 function getWelcomeHtml(context: vscode.ExtensionContext): string {
-  const welcomeHtmlPath = path.join(context.extensionPath, 'src', 'webview', 'welcome.html');
-  return fs.readFileSync(welcomeHtmlPath, 'utf8');
+  try {
+    // Try production path first (when extension is packaged)
+    const prodPath = path.join(context.extensionPath, 'out', 'webview', 'welcome.html');
+    if (fs.existsSync(prodPath)) {
+      return fs.readFileSync(prodPath, 'utf8');
+    }
+
+    // Fallback to development path
+    const devPath = path.join(context.extensionPath, 'src', 'webview', 'welcome.html');
+    if (fs.existsSync(devPath)) {
+      return fs.readFileSync(devPath, 'utf8');
+    }
+
+    // If neither exists, return inline HTML
+    return getInlineWelcomeHtml();
+  } catch (error) {
+    console.error('Error loading welcome HTML:', error);
+    return getInlineWelcomeHtml();
+  }
 }
 
 /**
  * Get dashboard HTML content
  */
 function getDashboardHtml(context: vscode.ExtensionContext): string {
-  const dashboardHtmlPath = path.join(context.extensionPath, 'src', 'webview', 'dashboard.html');
-  return fs.readFileSync(dashboardHtmlPath, 'utf8');
+  try {
+    // Try production path first (when extension is packaged)
+    const prodPath = path.join(context.extensionPath, 'out', 'webview', 'dashboard.html');
+    if (fs.existsSync(prodPath)) {
+      return fs.readFileSync(prodPath, 'utf8');
+    }
+
+    // Fallback to development path
+    const devPath = path.join(context.extensionPath, 'src', 'webview', 'dashboard.html');
+    if (fs.existsSync(devPath)) {
+      return fs.readFileSync(devPath, 'utf8');
+    }
+
+    // If neither exists, return inline HTML
+    return getInlineDashboardHtml();
+  } catch (error) {
+    console.error('Error loading dashboard HTML:', error);
+    return getInlineDashboardHtml();
+  }
+}
+
+/**
+ * Get inline welcome HTML as fallback
+ */
+function getInlineWelcomeHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Augment - Welcome</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+            margin: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .version {
+            color: var(--vscode-descriptionForeground);
+            font-size: 1.2em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 8px;
+            border-left: 4px solid var(--vscode-activityBarBadge-background);
+        }
+        .button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🔧 Fix Augment</div>
+        <div class="version">v2.2.1 - Bug Fixes & UI Improvements</div>
+    </div>
+
+    <div class="section">
+        <h3>🎉 Welcome to Fix Augment!</h3>
+        <p>Your extension is now active and ready to enhance your Augment workflows.</p>
+        <ul>
+            <li>🧠 Context health monitoring</li>
+            <li>📁 File context validation</li>
+            <li>⏱️ Process timeout protection</li>
+            <li>🔧 Double quote fixes</li>
+            <li>📊 Smart analytics</li>
+        </ul>
+    </div>
+
+    <div class="actions">
+        <button class="button" onclick="openDashboard()">Open Dashboard</button>
+        <button class="button" onclick="openSettings()">Settings</button>
+        <button class="button" onclick="closeWelcome()">Close</button>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        function openDashboard() {
+            vscode.postMessage({ command: 'openDashboard' });
+        }
+        function openSettings() {
+            vscode.postMessage({ command: 'openSettings' });
+        }
+        function closeWelcome() {
+            vscode.postMessage({ command: 'closeWelcome' });
+        }
+    </script>
+</body>
+</html>`;
+}
+
+/**
+ * Get inline dashboard HTML as fallback
+ */
+function getInlineDashboardHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Augment Dashboard</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+            margin: 0;
+        }
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid var(--vscode-activityBarBadge-background);
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-green { background-color: #4CAF50; }
+        .status-yellow { background-color: #FF9800; }
+        .status-red { background-color: #F44336; }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .action-btn {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .refresh-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--vscode-foreground);
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard">🔄</button>
+
+    <div class="dashboard-header">
+        <h2>🔧 Fix Augment Dashboard</h2>
+        <p>Smart Context & Process Management</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card">
+            <h4>🧠 Context Health</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="contextStatus"></div>
+                <span class="status-text" id="contextText">Healthy (0 exchanges)</span>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h4>📁 File Context</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="fileStatus"></div>
+                <span class="status-text" id="fileText">Ready</span>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h4>⏱️ Process Monitor</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="processStatus"></div>
+                <span class="status-text" id="processText">No active processes</span>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h4>🎯 Enhancement Status</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="enhancementStatus"></div>
+                <span class="status-text" id="enhancementText">All systems active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <h3>🚀 Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="checkContextHealth()">Check Context</button>
+            <button class="action-btn" onclick="refreshContext()">Refresh Context</button>
+            <button class="action-btn" onclick="validateFileContext()">Validate File</button>
+            <button class="action-btn" onclick="openSettings()">Settings</button>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        function refreshDashboard() {
+            vscode.postMessage({ command: 'refreshDashboard' });
+        }
+
+        function checkContextHealth() {
+            vscode.postMessage({ command: 'checkContextHealth' });
+        }
+
+        function refreshContext() {
+            vscode.postMessage({ command: 'refreshContext' });
+        }
+
+        function validateFileContext() {
+            vscode.postMessage({ command: 'validateFileContext' });
+        }
+
+        function openSettings() {
+            vscode.postMessage({ command: 'openSettings' });
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshDashboard, 30000);
+
+        // Initial load
+        refreshDashboard();
+    </script>
+</body>
+</html>`;
 }
 
 /**
  * Update dashboard status
  */
 function updateDashboardStatus(): void {
-  if (!dashboardPanel) return;
+  if (!dashboardPanel) {
+    return;
+  }
 
   const statusData = {
     context: getContextStatus(),
