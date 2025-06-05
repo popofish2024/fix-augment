@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
-import * as marked from 'marked';
 import hljs from 'highlight.js';
 import * as path from 'path';
 import * as fs from 'fs';
+
+// Use require for marked to ensure compatibility
+const { marked } = require('marked');
 
 // Status bar items
 let statusBarItem: vscode.StatusBarItem;
