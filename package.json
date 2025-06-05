@@ -2,7 +2,7 @@
   "name": "fix-augment",
   "displayName": "Fix Augment",
   "description": "Enhanced Augment extension with improved Agent workflows, formatting, and productivity features by MrXploisLite",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "publisher": "RomyRianata",
   "author": {
     "name": "Romy Rianata (MrXploisLite)"
@@ -42,6 +42,36 @@
   "contributes": {
     "commands": [
       {
+        "command": "fix-augment.showDashboard",
+        "title": "Fix Augment: Open Dashboard",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "fix-augment.showWelcome",
+        "title": "Fix Augment: Show Welcome & Changelog",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fix-augment.contextHealth",
+        "title": "Fix Augment: Check Context Health",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "fix-augment.refreshContext",
+        "title": "Fix Augment: Refresh Context",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fix-augment.validateFileContext",
+        "title": "Fix Augment: Validate File Context",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fix-augment.monitorProcess",
+        "title": "Fix Augment: Monitor Process",
+        "icon": "$(watch)"
+      },
+      {
         "command": "fix-augment.fixDoubleQuotes",
         "title": "Fix Augment: Fix Double Quote Issues"
       },
@@ -74,6 +104,36 @@
           "default": true,
           "description": "Enable or disable the Fix Augment extension"
         },
+        "fixAugment.showWelcomeOnUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show welcome screen and changelog after updates"
+        },
+        "fixAugment.contextHealthMonitoring": {
+          "type": "boolean",
+          "default": true,
+          "description": "Monitor conversation context health"
+        },
+        "fixAugment.contextRefreshThreshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Number of exchanges before suggesting context refresh"
+        },
+        "fixAugment.fileContextValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate and inject file context automatically"
+        },
+        "fixAugment.processTimeoutWarning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when processes take too long"
+        },
+        "fixAugment.processTimeoutMinutes": {
+          "type": "number",
+          "default": 3,
+          "description": "Minutes before showing timeout warning"
+        },
         "fixAugment.autoFixDoubleQuotes": {
           "type": "boolean",
           "default": true,
@@ -102,7 +162,34 @@
         }
       }
     },
+    "views": {
+      "explorer": [
+        {
+          "id": "fixAugmentDashboard",
+          "name": "Fix Augment Dashboard",
+          "when": "fixAugment.enabled"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "fixAugmentDashboard",
+        "contents": "Welcome to Fix Augment!\n[Open Dashboard](command:fix-augment.showDashboard)\n[Show Welcome](command:fix-augment.showWelcome)"
+      }
+    ],
     "menus": {
+      "view/title": [
+        {
+          "command": "fix-augment.showDashboard",
+          "when": "view == fixAugmentDashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "fix-augment.refreshContext",
+          "when": "view == fixAugmentDashboard",
+          "group": "navigation"
+        }
+      ],
       "editor/context": [
         {
           "command": "fix-augment.optimizePrompt",
@@ -110,22 +197,40 @@
           "group": "augment@1"
         },
         {
-          "command": "fix-augment.fixDoubleQuotes",
+          "command": "fix-augment.validateFileContext",
           "when": "editorHasSelection",
           "group": "augment@2"
         },
         {
-          "command": "fix-augment.checkInputSize",
+          "command": "fix-augment.contextHealth",
           "when": "editorHasSelection",
           "group": "augment@3"
         },
         {
-          "command": "fix-augment.suggestBreakdown",
+          "command": "fix-augment.fixDoubleQuotes",
           "when": "editorHasSelection",
           "group": "augment@4"
         }
       ],
       "commandPalette": [
+        {
+          "command": "fix-augment.showDashboard"
+        },
+        {
+          "command": "fix-augment.showWelcome"
+        },
+        {
+          "command": "fix-augment.contextHealth"
+        },
+        {
+          "command": "fix-augment.refreshContext"
+        },
+        {
+          "command": "fix-augment.validateFileContext"
+        },
+        {
+          "command": "fix-augment.monitorProcess"
+        },
         {
           "command": "fix-augment.optimizePrompt",
           "when": "editorHasSelection"

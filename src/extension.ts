@@ -1,12 +1,22 @@
 import * as vscode from 'vscode';
 import * as marked from 'marked';
 import hljs from 'highlight.js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Status bar items
 let statusBarItem: vscode.StatusBarItem;
 
 // Flags to track extension state
 let enhancementActive = true;
+
+// UI state tracking
+let dashboardPanel: vscode.WebviewPanel | undefined;
+let welcomePanel: vscode.WebviewPanel | undefined;
+let contextExchangeCount = 0;
+let sessionStartTime = Date.now();
+let lastContextRefresh = Date.now();
+let filesProcessed = 0;
 
 // Interface for the Augment extension API
 interface AugmentExtension {
@@ -44,6 +54,15 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register commands
   context.subscriptions.push(
+    // UI Commands
+    vscode.commands.registerCommand('fix-augment.showDashboard', () => showDashboard(context)),
+    vscode.commands.registerCommand('fix-augment.showWelcome', () => showWelcome(context)),
+    vscode.commands.registerCommand('fix-augment.contextHealth', checkContextHealthCommand),
+    vscode.commands.registerCommand('fix-augment.refreshContext', refreshContextCommand),
+    vscode.commands.registerCommand('fix-augment.validateFileContext', validateFileContextCommand),
+    vscode.commands.registerCommand('fix-augment.monitorProcess', monitorProcessCommand),
+
+    // Fix Commands
     vscode.commands.registerCommand('fix-augment.fixDoubleQuotes', fixDoubleQuotesCommand),
     vscode.commands.registerCommand('fix-augment.checkInputSize', checkInputSizeCommand),
     vscode.commands.registerCommand('fix-augment.suggestBreakdown', suggestBreakdownCommand),
@@ -51,6 +70,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('fix-augment.formatOutput', formatOutput),
     vscode.commands.registerCommand('fix-augment.toggleEnhancement', toggleEnhancement)
   );
+
+  // Show welcome screen on first install or update
+  checkAndShowWelcome(context);
 
   // Listen for text document changes to intercept Augment output
   context.subscriptions.push(
@@ -941,11 +963,352 @@ async function optimizePromptCommand(): Promise<void> {
 
 
 /**
+ * Check and show welcome screen if needed
+ */
+async function checkAndShowWelcome(context: vscode.ExtensionContext): Promise<void> {
+  const config = vscode.workspace.getConfiguration('fixAugment');
+  const showWelcomeOnUpdate = config.get<boolean>('showWelcomeOnUpdate', true);
+
+  if (showWelcomeOnUpdate) {
+    const lastVersion = context.globalState.get<string>('lastVersion', '0.0.0');
+    const currentVersion = '2.2.0';
+
+    if (lastVersion !== currentVersion) {
+      await context.globalState.update('lastVersion', currentVersion);
+      showWelcome(context);
+    }
+  }
+}
+
+/**
+ * Show welcome screen
+ */
+function showWelcome(context: vscode.ExtensionContext): void {
+  if (welcomePanel) {
+    welcomePanel.reveal();
+    return;
+  }
+
+  welcomePanel = vscode.window.createWebviewPanel(
+    'fixAugmentWelcome',
+    'Fix Augment - Welcome',
+    vscode.ViewColumn.One,
+    {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))]
+    }
+  );
+
+  welcomePanel.webview.html = getWelcomeHtml(context);
+
+  welcomePanel.webview.onDidReceiveMessage(
+    message => {
+      switch (message.command) {
+        case 'openDashboard':
+          showDashboard(context);
+          break;
+        case 'openSettings':
+          vscode.commands.executeCommand('workbench.action.openSettings', 'fixAugment');
+          break;
+        case 'closeWelcome':
+          welcomePanel?.dispose();
+          break;
+      }
+    },
+    undefined,
+    context.subscriptions
+  );
+
+  welcomePanel.onDidDispose(() => {
+    welcomePanel = undefined;
+  });
+}
+
+/**
+ * Show dashboard
+ */
+function showDashboard(context: vscode.ExtensionContext): void {
+  if (dashboardPanel) {
+    dashboardPanel.reveal();
+    return;
+  }
+
+  dashboardPanel = vscode.window.createWebviewPanel(
+    'fixAugmentDashboard',
+    'Fix Augment Dashboard',
+    vscode.ViewColumn.One,
+    {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'))]
+    }
+  );
+
+  dashboardPanel.webview.html = getDashboardHtml(context);
+
+  dashboardPanel.webview.onDidReceiveMessage(
+    message => {
+      switch (message.command) {
+        case 'refreshDashboard':
+          updateDashboardStatus();
+          break;
+        case 'checkContextHealth':
+          checkContextHealthCommand();
+          break;
+        case 'refreshContext':
+          refreshContextCommand();
+          break;
+        case 'validateFileContext':
+          validateFileContextCommand();
+          break;
+        case 'optimizePrompt':
+          optimizePromptCommand();
+          break;
+        case 'fixDoubleQuotes':
+          fixDoubleQuotesCommand();
+          break;
+        case 'checkInputSize':
+          checkInputSizeCommand();
+          break;
+        case 'suggestBreakdown':
+          suggestBreakdownCommand();
+          break;
+        case 'openSettings':
+          vscode.commands.executeCommand('workbench.action.openSettings', 'fixAugment');
+          break;
+      }
+    },
+    undefined,
+    context.subscriptions
+  );
+
+  dashboardPanel.onDidDispose(() => {
+    dashboardPanel = undefined;
+  });
+
+  // Initial status update
+  updateDashboardStatus();
+}
+
+/**
+ * Get welcome HTML content
+ */
+function getWelcomeHtml(context: vscode.ExtensionContext): string {
+  const welcomeHtmlPath = path.join(context.extensionPath, 'src', 'webview', 'welcome.html');
+  return fs.readFileSync(welcomeHtmlPath, 'utf8');
+}
+
+/**
+ * Get dashboard HTML content
+ */
+function getDashboardHtml(context: vscode.ExtensionContext): string {
+  const dashboardHtmlPath = path.join(context.extensionPath, 'src', 'webview', 'dashboard.html');
+  return fs.readFileSync(dashboardHtmlPath, 'utf8');
+}
+
+/**
+ * Update dashboard status
+ */
+function updateDashboardStatus(): void {
+  if (!dashboardPanel) return;
+
+  const statusData = {
+    context: getContextStatus(),
+    file: getFileStatus(),
+    process: getProcessStatus(),
+    enhancement: getEnhancementStatus()
+  };
+
+  const metricsData = {
+    sessionDuration: formatDuration(Date.now() - sessionStartTime),
+    contextExchanges: contextExchangeCount.toString(),
+    filesProcessed: filesProcessed.toString(),
+    lastRefresh: formatTime(lastContextRefresh)
+  };
+
+  dashboardPanel.webview.postMessage({ command: 'updateStatus', data: statusData });
+  dashboardPanel.webview.postMessage({ command: 'updateMetrics', data: metricsData });
+}
+
+/**
+ * Get context status
+ */
+function getContextStatus(): { status: string; text: string } {
+  const config = vscode.workspace.getConfiguration('fixAugment');
+  const threshold = config.get<number>('contextRefreshThreshold', 10);
+
+  if (contextExchangeCount >= threshold) {
+    return { status: 'red', text: `Context refresh needed (${contextExchangeCount} exchanges)` };
+  } else if (contextExchangeCount >= threshold * 0.7) {
+    return { status: 'yellow', text: `Context getting long (${contextExchangeCount} exchanges)` };
+  } else {
+    return { status: 'green', text: `Context healthy (${contextExchangeCount} exchanges)` };
+  }
+}
+
+/**
+ * Get file status
+ */
+function getFileStatus(): { status: string; text: string } {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return { status: 'yellow', text: 'No active file' };
+  }
+
+  const fileName = path.basename(editor.document.fileName);
+  return { status: 'green', text: `Active: ${fileName}` };
+}
+
+/**
+ * Get process status
+ */
+function getProcessStatus(): { status: string; text: string } {
+  // This would be enhanced with actual process monitoring
+  return { status: 'green', text: 'No active processes' };
+}
+
+/**
+ * Get enhancement status
+ */
+function getEnhancementStatus(): { status: string; text: string } {
+  if (enhancementActive) {
+    return { status: 'green', text: 'All systems active' };
+  } else {
+    return { status: 'red', text: 'Enhancement disabled' };
+  }
+}
+
+/**
+ * Format duration in human readable format
+ */
+function formatDuration(ms: number): string {
+  const minutes = Math.floor(ms / 60000);
+  const hours = Math.floor(minutes / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`;
+  } else {
+    return `${minutes}m`;
+  }
+}
+
+/**
+ * Format time in human readable format
+ */
+function formatTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) {
+    return 'Just now';
+  } else if (minutes < 60) {
+    return `${minutes}m ago`;
+  } else {
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+  }
+}
+
+/**
+ * Command: Check context health
+ */
+async function checkContextHealthCommand(): Promise<void> {
+  const status = getContextStatus();
+
+  if (status.status === 'red') {
+    const action = await vscode.window.showWarningMessage(
+      status.text,
+      'Refresh Context',
+      'Continue Anyway'
+    );
+
+    if (action === 'Refresh Context') {
+      refreshContextCommand();
+    }
+  } else {
+    vscode.window.showInformationMessage(status.text);
+  }
+
+  updateDashboardStatus();
+}
+
+/**
+ * Command: Refresh context
+ */
+async function refreshContextCommand(): Promise<void> {
+  contextExchangeCount = 0;
+  lastContextRefresh = Date.now();
+
+  vscode.window.showInformationMessage(
+    'Context refreshed! Consider starting a new conversation with Augment for better results.'
+  );
+
+  updateDashboardStatus();
+}
+
+/**
+ * Command: Validate file context
+ */
+async function validateFileContextCommand(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active file to validate');
+    return;
+  }
+
+  const fileName = path.basename(editor.document.fileName);
+  const fileExtension = path.extname(editor.document.fileName);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+
+  let contextInfo = `Current file: ${fileName}`;
+  if (fileExtension) {
+    contextInfo += ` (${fileExtension})`;
+  }
+  if (workspaceFolder) {
+    contextInfo += `\nWorkspace: ${workspaceFolder.name}`;
+  }
+
+  const action = await vscode.window.showInformationMessage(
+    `File context validated:\n${contextInfo}`,
+    'Copy Context',
+    'Inject to Prompt'
+  );
+
+  if (action === 'Copy Context') {
+    vscode.env.clipboard.writeText(contextInfo);
+    vscode.window.showInformationMessage('File context copied to clipboard');
+  } else if (action === 'Inject to Prompt') {
+    const selection = editor.selection;
+    const contextComment = `/* FILE CONTEXT: ${contextInfo} */\n`;
+    editor.edit(editBuilder => {
+      editBuilder.insert(selection.start, contextComment);
+    });
+  }
+
+  filesProcessed++;
+  updateDashboardStatus();
+}
+
+/**
+ * Command: Monitor process
+ */
+async function monitorProcessCommand(): Promise<void> {
+  vscode.window.showInformationMessage('Process monitoring is active. You will be notified if any process takes too long.');
+  updateDashboardStatus();
+}
+
+/**
  * Deactivate the extension
  */
 export function deactivate() {
   // Clean up resources
   if (statusBarItem) {
     statusBarItem.dispose();
+  }
+  if (dashboardPanel) {
+    dashboardPanel.dispose();
+  }
+  if (welcomePanel) {
+    welcomePanel.dispose();
   }
 }

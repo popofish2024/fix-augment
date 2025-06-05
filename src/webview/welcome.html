@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Augment - Welcome</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 20px;
+            margin: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .version {
+            color: var(--vscode-descriptionForeground);
+            font-size: 1.2em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 8px;
+            border-left: 4px solid var(--vscode-activityBarBadge-background);
+        }
+        .section h3 {
+            margin-top: 0;
+            color: var(--vscode-activityBarBadge-background);
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--vscode-widget-border);
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-icon {
+            margin-right: 10px;
+            color: var(--vscode-activityBarBadge-background);
+        }
+        .button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        .button-secondary {
+            background-color: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+        }
+        .button-secondary:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground);
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .changelog {
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: var(--vscode-editor-font-family);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🔧 Fix Augment</div>
+        <div class="version">v2.2.0 - Smart Context & Process Management</div>
+    </div>
+
+    <div class="section">
+        <h3>🎉 What's New in v2.2.0</h3>
+        <ul class="feature-list">
+            <li><span class="feature-icon">🧠</span><strong>Context Preservation Helper</strong> - Auto-detect long conversations and suggest context refresh</li>
+            <li><span class="feature-icon">📁</span><strong>File Context Validator</strong> - Ensure Augment knows which file you're working on</li>
+            <li><span class="feature-icon">⏱️</span><strong>Process Timeout Protection</strong> - Monitor long-running processes and suggest task breakdown</li>
+            <li><span class="feature-icon">📱</span><strong>Interactive Dashboard</strong> - Visual control panel for all features</li>
+            <li><span class="feature-icon">🔔</span><strong>Smart Notifications</strong> - Real-time alerts with actionable buttons</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>📋 Changelog</h3>
+        <div class="changelog">
+            <h4>v2.2.0 - June 5, 2025</h4>
+            <p><strong>Added:</strong></p>
+            <ul>
+                <li>Context health monitoring with visual indicators</li>
+                <li>Automatic file context validation and injection</li>
+                <li>Process timeout detection and warnings</li>
+                <li>Interactive dashboard with real-time status</li>
+                <li>Welcome screen with visual changelog</li>
+                <li>Smart notifications with action buttons</li>
+            </ul>
+            <p><strong>Enhanced:</strong></p>
+            <ul>
+                <li>Better user experience with visual UI components</li>
+                <li>Improved context management for long conversations</li>
+                <li>Smarter process monitoring and suggestions</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>🚀 Quick Start</h3>
+        <p>Get started with Fix Augment's new features:</p>
+        <ol>
+            <li>Open the <strong>Fix Augment Dashboard</strong> in the Explorer panel</li>
+            <li>Check your <strong>Context Health</strong> indicator</li>
+            <li>Use <strong>File Context Validator</strong> before long Augment sessions</li>
+            <li>Monitor <strong>Process Status</strong> for long-running tasks</li>
+        </ol>
+    </div>
+
+    <div class="actions">
+        <button class="button" onclick="openDashboard()">Open Dashboard</button>
+        <button class="button button-secondary" onclick="openSettings()">Settings</button>
+        <button class="button button-secondary" onclick="closeWelcome()">Close</button>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        function openDashboard() {
+            vscode.postMessage({ command: 'openDashboard' });
+        }
+
+        function openSettings() {
+            vscode.postMessage({ command: 'openSettings' });
+        }
+
+        function closeWelcome() {
+            vscode.postMessage({ command: 'closeWelcome' });
+        }
+
+        // Auto-close after 30 seconds if user doesn't interact
+        setTimeout(() => {
+            const autoCloseNotification = document.createElement('div');
+            autoCloseNotification.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: var(--vscode-notifications-background);
+                color: var(--vscode-notifications-foreground);
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 12px;
+            `;
+            autoCloseNotification.textContent = 'Welcome screen will auto-close in 10 seconds...';
+            document.body.appendChild(autoCloseNotification);
+
+            setTimeout(() => {
+                closeWelcome();
+            }, 10000);
+        }, 30000);
+    </script>
+</body>
+</html>

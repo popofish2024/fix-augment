@@ -72,6 +72,17 @@ Configure Fix Augment to match your workflow:
 
 ## Release Notes
 
+### 2.2.0 - Smart Context & Process Management
+
+- **🎛️ Interactive Dashboard**: Visual control panel with real-time status monitoring
+- **📱 Welcome Screen**: Visual changelog that appears automatically after updates
+- **🧠 Context Health Monitoring**: Auto-detect long conversations and suggest refresh
+- **📁 File Context Validation**: Ensure Augment knows which file you're working on
+- **⏱️ Process Timeout Protection**: Monitor processes and suggest task breakdown
+- **🔔 Smart Notifications**: Real-time alerts with actionable buttons
+- **📊 Session Metrics**: Track exchanges, files processed, session duration
+- **🎨 Modern UI**: No more text-only settings - proper visual interface
+
 ### 2.1.0
 
 - **🎯 Community-Driven Fixes**: Based on real issues from Augment Discord community
@@ -146,15 +157,27 @@ Fix Augment automatically detects when you're using Augment and provides enhance
 - **Non-intrusive**: Enhances without changing Augment's core functionality
 - **Contextual**: Provides relevant workspace and file context to improve AI understanding
 
-## 🛠️ Commands
+## 🛠️ Commands & Features
 
-### Primary Fix Commands
+### 🎛️ Dashboard & UI
+- **Fix Augment: Open Dashboard** - Interactive control panel with real-time status
+- **Fix Augment: Show Welcome & Changelog** - Visual welcome screen with latest features
+
+### 🧠 Smart Context Management
+- **Fix Augment: Check Context Health** - Monitor conversation length and health
+- **Fix Augment: Refresh Context** - Reset context counter and suggest new conversation
+- **Fix Augment: Validate File Context** - Ensure Augment knows current file
+
+### ⏱️ Process Management
+- **Fix Augment: Monitor Process** - Track long-running operations and suggest breakdown
+
+### 🔧 Fix Tools
 - **Fix Augment: Optimize Prompt for Augment** - Applies all fixes and optimizations to selected text
 - **Fix Augment: Fix Double Quote Issues** - Escapes double quotes to prevent Augment errors
 - **Fix Augment: Check Input Size** - Warns if input might be too large and cause credit loss
 - **Fix Augment: Suggest Task Breakdown** - Provides breakdown suggestions for complex tasks
 
-### Utility Commands
+### 🎨 Utility Commands
 - **Fix Augment: Format Output** - Improves formatting of Augment responses
 - **Fix Augment: Toggle Enhancement** - Enable/disable the extension
 

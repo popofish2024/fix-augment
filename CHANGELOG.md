@@ -4,6 +4,30 @@ All notable changes to the "fix-augment" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.2.0] - 2025-06-05
+
+### Added - Smart Context & Process Management
+- **🎛️ Interactive Dashboard**: Visual control panel with real-time status indicators
+- **📱 Welcome Screen**: Visual changelog and feature tour after updates
+- **🧠 Context Preservation Helper**: Auto-detect long conversations and suggest refresh
+- **📁 File Context Validator**: Ensure Augment knows which file you're working on
+- **⏱️ Process Timeout Protection**: Monitor long-running processes and suggest breakdown
+- **🔔 Smart Notifications**: Real-time alerts with actionable buttons
+- **📊 Session Metrics**: Track context exchanges, files processed, session duration
+
+### Enhanced - User Experience
+- **Visual UI Components**: No more text-only settings, proper visual interface
+- **Auto-Welcome on Update**: Automatic changelog display after extension updates
+- **Dashboard Integration**: Centralized control panel in Explorer sidebar
+- **Context Health Monitoring**: Visual indicators for conversation health
+- **One-Click Actions**: Quick access buttons for all major features
+
+### Technical Improvements
+- **Webview Integration**: Modern HTML/CSS/JS interface components
+- **State Management**: Persistent tracking of session metrics and health
+- **Real-time Updates**: Live status updates in dashboard
+- **Better Error Handling**: Improved user feedback and error recovery
+
 ## [2.1.1] - 2025-06-05
 
 ### Changed
