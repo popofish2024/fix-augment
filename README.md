@@ -87,7 +87,7 @@ Configure Fix Augment to match your workflow:
 - **Agent Enhancement**: Added Agent workflow optimization with context injection
 - **Next Edit Support**: Added Next Edit context optimization for better suggestions
 - **Instructions Formatting**: Added automatic formatting for natural language instructions
-- **Removed Obsolete Features**: Removed usage tracking, limit bypass, and API key management (no longer needed)
+- **Focused Approach**: Streamlined to focus only on practical fixes and enhancements
 - **Updated Output Detection**: Enhanced detection for modern Augment output formats
 - **Improved Integration**: Better integration with Agent, Chat, Next Edit, Instructions, and Completions
 - **Streamlined UI**: Cleaner interface focused on current Augment capabilities
@@ -95,12 +95,9 @@ Configure Fix Augment to match your workflow:
 
 ### 1.1.0
 
-- Added API key management with secure storage
-- Added usage limit bypass features
-- Added usage tracking with status bar indicator
-- Added auto-reset functionality to avoid hitting limits
-- Added request delay to prevent rate limiting
+- Enhanced input processing and formatting
 - Improved extension stability and performance
+- Better integration with Augment workflows
 
 ### 1.0.0
 

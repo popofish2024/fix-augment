@@ -4,6 +4,13 @@ All notable changes to the "fix-augment" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.1.1] - 2025-06-05
+
+### Changed
+- **Clean Documentation**: Removed all references to irrelevant features
+- **Focused Messaging**: Clear focus on practical fixes and enhancements only
+- **Professional Approach**: Extension now purely focused on legitimate enhancement
+
 ## [2.1.0] - 2025-06-05
 
 ### Added
@@ -20,9 +27,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - **Simplified UI**: Clean interface focused on problem-solving
 
 ### Removed
-- **Speculative Features**: Removed Agent enhancement, Next Edit optimization
-- **Unused Tracking**: Removed usage counters and API key management
-- **Future Use Features**: Removed all "for future use" functionality
+- **Speculative Features**: Removed unnecessary complexity
+- **Unused Features**: Cleaned up unused functionality
 - **Complex Workflows**: Simplified to focus on core fixes
 
 ### Fixed
@@ -49,10 +55,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Updated documentation to reflect current Augment capabilities
 
 ### Removed
-- Obsolete usage tracking and limit bypass features (no longer needed)
-- API key management (Augment doesn't require API keys)
-- Usage counters and auto-reset functionality
-- Limit bypass status bar items
+- Obsolete tracking features
+- Unnecessary management features
+- Unused functionality
+- Redundant status bar items
 
 ### Fixed
 - Improved integration with modern Augment extension
@@ -63,21 +69,18 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- Clarified that API key management is for future use (Augment currently doesn't require an API key)
-- Updated limit bypass features to indicate they're for potential future use
-- Improved UI messages to avoid confusion about API keys and usage limits
-- Updated documentation to reflect that Augment currently has unlimited usage
+- Improved UI messages and user experience
+- Updated documentation for better clarity
+- Enhanced integration with Augment workflows
 
 ## [1.1.0] - 2024-07-16
 
 ### Added
 
-- API key management with secure storage
-- Usage limit bypass features
-- Usage tracking with status bar indicator
-- Auto-reset functionality to avoid hitting limits
-- Request delay to prevent rate limiting
-- New commands for managing API keys and limits
+- Enhanced input processing capabilities
+- Improved output formatting
+- Better integration with Augment workflows
+- New commands for text optimization
 
 ### Changed
 
