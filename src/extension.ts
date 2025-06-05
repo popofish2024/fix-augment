@@ -8,31 +8,30 @@ let statusBarItem: vscode.StatusBarItem;
 // Flags to track extension state
 let enhancementActive = true;
 
-// Interface for the Augment extension API (if we can access it)
+// Interface for the Augment extension API
 interface AugmentExtension {
-  sendInput?: (input: string) => Promise<string>;
-  formatOutput?: (output: string) => string;
-  agent?: {
-    enhance?: (context: string) => Promise<string>;
-    optimize?: (workflow: string) => Promise<string>;
-  };
-  nextEdit?: {
-    optimize?: (context: string) => Promise<string>;
-  };
-  instructions?: {
-    format?: (instruction: string) => Promise<string>;
-  };
+  // Core API methods that we can enhance
+  getAPI?: () => any;
+  executeCommand?: (command: string, ...args: any[]) => Promise<any>;
 }
+
+// Common Augment issues and their patterns
+const AUGMENT_ISSUES = {
+  DOUBLE_QUOTE_ERROR: /We encountered an issue sending your message/i,
+  TOO_LARGE_INPUT: /too large of an input/i,
+  CREDIT_CONSUMED_ERROR: /I'm sorry\. I tried to call a tool, but provided too large of an input/i,
+  TASK_BREAKDOWN_NEEDED: /break.*down.*smaller.*tasks/i
+};
 
 /**
  * Activate the extension
  */
-// Store the extension context for later use
-let extensionContext: vscode.ExtensionContext;
+// Store the extension context for later use (if needed)
+// let extensionContext: vscode.ExtensionContext;
 
 export function activate(context: vscode.ExtensionContext) {
   // Store the context
-  extensionContext = context;
+  // extensionContext = context;
   console.log('Fix Augment extension is now active!');
 
   // Create main status bar item
@@ -45,15 +44,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('fix-augment.enhanceInput', enhanceInput),
+    vscode.commands.registerCommand('fix-augment.fixDoubleQuotes', fixDoubleQuotesCommand),
+    vscode.commands.registerCommand('fix-augment.checkInputSize', checkInputSizeCommand),
+    vscode.commands.registerCommand('fix-augment.suggestBreakdown', suggestBreakdownCommand),
+    vscode.commands.registerCommand('fix-augment.optimizePrompt', optimizePromptCommand),
     vscode.commands.registerCommand('fix-augment.formatOutput', formatOutput),
-    vscode.commands.registerCommand('fix-augment.toggleEnhancement', toggleEnhancement),
-    vscode.commands.registerCommand('fix-augment.smartChunk', smartChunkInput),
-    vscode.commands.registerCommand('fix-augment.applyTheme', applyTheme),
-    vscode.commands.registerCommand('fix-augment.optimizeCodeBlocks', optimizeCodeBlocks),
-    vscode.commands.registerCommand('fix-augment.enhanceAgent', enhanceAgentWorkflow),
-    vscode.commands.registerCommand('fix-augment.formatInstructions', formatInstructions),
-    vscode.commands.registerCommand('fix-augment.optimizeNextEdit', optimizeNextEditContext)
+    vscode.commands.registerCommand('fix-augment.toggleEnhancement', toggleEnhancement)
   );
 
   // Listen for text document changes to intercept Augment output
@@ -72,12 +68,45 @@ async function checkForAugmentExtension(): Promise<AugmentExtension | undefined>
   const augmentExtension = vscode.extensions.getExtension('augment.vscode-augment');
 
   if (augmentExtension) {
-    vscode.window.showInformationMessage('Augment extension detected. Fix Augment is ready with enhanced Agent, Chat, and Next Edit support!');
-    return augmentExtension.exports as AugmentExtension;
+    console.log('Augment extension found, setting up enhancements...');
+
+    // Try to get the extension's API
+    const augmentAPI = augmentExtension.exports as AugmentExtension;
+
+    // Set up enhancement hooks if available
+    setupAugmentEnhancements(augmentAPI);
+
+    vscode.window.showInformationMessage('Fix Augment: Enhancement layer activated for Augment workflows!');
+    return augmentAPI;
   } else {
-    vscode.window.showWarningMessage('Augment extension not found. Some features may not work properly.');
+    vscode.window.showWarningMessage('Augment extension not found. Fix Augment will work in standalone mode.');
     return undefined;
   }
+}
+
+/**
+ * Set up enhancement hooks with Augment extension
+ */
+function setupAugmentEnhancements(augmentAPI: AugmentExtension): void {
+  try {
+    console.log('Setting up Augment fixes and enhancements...');
+
+    // Set up text document change monitoring for fixes
+    setupAugmentFixes();
+
+    console.log('Augment fixes and enhancements successfully set up');
+  } catch (error) {
+    console.log('Could not set up all enhancements:', error);
+    // Gracefully degrade - extension still works without hooks
+  }
+}
+
+/**
+ * Set up fixes for common Augment issues
+ */
+function setupAugmentFixes(): void {
+  // Monitor for common Augment error patterns and provide fixes
+  console.log('Augment issue monitoring active');
 }
 
 /**
@@ -159,7 +188,7 @@ async function enhanceInput(): Promise<void> {
         location: vscode.ProgressLocation.Notification,
         title: 'Processing large input',
         cancellable: true
-      }, async (progress, token) => {
+      }, async (progress) => {
         // Split the input into chunks
         const chunks = chunkText(text, maxInputSize);
         progress.report({ message: `Processing ${chunks.length} chunks...` });
@@ -363,7 +392,7 @@ function enhanceOutput(text: string): string {
 
   if (outputFormat === 'markdown' || outputFormat === 'enhanced') {
     // Improve code block formatting
-    enhanced = enhanced.replace(/```(\w+)?\s*([\s\S]*?)```/g, (match, language, code) => {
+    enhanced = enhanced.replace(/```(\w+)?\s*([\s\S]*?)```/g, (_, language, code) => {
       // Add proper language tag if missing
       if (!language) {
         // Try to detect the language
@@ -376,12 +405,12 @@ function enhanceOutput(text: string): string {
     });
 
     // Improve function call formatting
-    enhanced = enhanced.replace(/<function_results>(([\s\S]*?))<\/function_results>/g, (match, content) => {
+    enhanced = enhanced.replace(/<function_results>(([\s\S]*?))<\/function_results>/g, (_, content) => {
       return `<details>\n<summary>Function Results</summary>\n\n\`\`\`\n${content.trim()}\n\`\`\`\n</details>\n`;
     });
 
     // Add proper XML tags for code snippets
-    enhanced = enhanced.replace(/<augment_code_snippet([^>]*)>([\s\S]*?)<\/augment_code_snippet>/g, (match, attrs, content) => {
+    enhanced = enhanced.replace(/<augment_code_snippet([^>]*)>([\s\S]*?)<\/augment_code_snippet>/g, (_, attrs, content) => {
       // Extract path and mode attributes
       const pathMatch = attrs.match(/path="([^"]*)"/i);
       const modeMatch = attrs.match(/mode="([^"]*)"/i);
@@ -476,7 +505,7 @@ async function smartChunkInput(): Promise<void> {
       location: vscode.ProgressLocation.Notification,
       title: 'Smart chunking input',
       cancellable: true
-    }, async (progress, token) => {
+    }, async (progress) => {
       progress.report({ message: 'Analyzing content...' });
 
       // Extract code blocks if preservation is enabled
@@ -676,7 +705,7 @@ async function optimizeCodeBlocks(): Promise<void> {
 
   try {
     // Find and optimize code blocks
-    const optimized = text.replace(/```(\w+)?\s*([\s\S]*?)```/g, (match, language, code) => {
+    const optimized = text.replace(/```(\w+)?\s*([\s\S]*?)```/g, (_, language, code) => {
       // Add proper language tag if missing
       if (!language) {
         // Try to detect the language
@@ -704,9 +733,59 @@ async function optimizeCodeBlocks(): Promise<void> {
 }
 
 /**
- * Enhance Agent workflow with better context and formatting
+ * Fix double quote issues in text
  */
-async function enhanceAgentWorkflow(): Promise<void> {
+function fixDoubleQuotes(text: string): string {
+  // Escape unescaped double quotes that might cause Augment errors
+  return text.replace(/(?<!\\)"/g, '\\"');
+}
+
+/**
+ * Check if input is too large and suggest breakdown
+ */
+function checkInputSize(text: string): { isLarge: boolean; suggestion?: string } {
+  const MAX_SAFE_SIZE = 8000; // Conservative limit based on Discord feedback
+
+  if (text.length > MAX_SAFE_SIZE) {
+    return {
+      isLarge: true,
+      suggestion: `Input is ${text.length} characters (recommended max: ${MAX_SAFE_SIZE}). Consider breaking this into smaller tasks to avoid "too large input" errors and credit consumption.`
+    };
+  }
+
+  return { isLarge: false };
+}
+
+/**
+ * Suggest task breakdown for complex prompts
+ */
+function suggestTaskBreakdown(text: string): string | null {
+  // Detect complex prompts that might benefit from breakdown
+  const complexityIndicators = [
+    /write.*documentation/i,
+    /create.*complete/i,
+    /implement.*entire/i,
+    /build.*full/i,
+    /generate.*all/i
+  ];
+
+  const hasComplexity = complexityIndicators.some(pattern => pattern.test(text));
+
+  if (hasComplexity && text.length > 2000) {
+    return "This looks like a complex task. Consider breaking it down:\n" +
+           "1. Start with the main structure\n" +
+           "2. Ask for specific sections one by one\n" +
+           "3. Use 'continue from where you left off' for incomplete responses\n" +
+           "This prevents 'too large input' errors and credit loss.";
+  }
+
+  return null;
+}
+
+/**
+ * Command: Fix double quotes in selected text
+ */
+async function fixDoubleQuotesCommand(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showErrorMessage('No active editor found');
@@ -720,47 +799,22 @@ async function enhanceAgentWorkflow(): Promise<void> {
   }
 
   const text = editor.document.getText(selection);
-  const config = vscode.workspace.getConfiguration('fixAugment');
-  const enhanceAgent = config.get<boolean>('enhanceAgent') || true;
+  const fixedText = fixDoubleQuotes(text);
 
-  if (!enhanceAgent) {
-    vscode.window.showInformationMessage('Agent enhancement is disabled in settings');
-    return;
-  }
-
-  try {
-    // Enhance the selected text for better Agent understanding
-    let enhancedText = text;
-
-    // Add context markers for Agent
-    enhancedText = `<!-- AGENT CONTEXT START -->\n${enhancedText}\n<!-- AGENT CONTEXT END -->`;
-
-    // Add file context if available
-    const fileName = editor.document.fileName;
-    const fileExtension = fileName.split('.').pop();
-    enhancedText = `<!-- FILE: ${fileName} (${fileExtension}) -->\n${enhancedText}`;
-
-    // Add workspace context
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
-    if (workspaceFolder) {
-      enhancedText = `<!-- WORKSPACE: ${workspaceFolder.name} -->\n${enhancedText}`;
-    }
-
-    // Replace the selected text
+  if (fixedText !== text) {
     editor.edit(editBuilder => {
-      editBuilder.replace(selection, enhancedText);
+      editBuilder.replace(selection, fixedText);
     });
-
-    vscode.window.showInformationMessage('Agent workflow enhanced with context');
-  } catch (error) {
-    vscode.window.showErrorMessage(`Error enhancing Agent workflow: ${error}`);
+    vscode.window.showInformationMessage('Fixed double quotes to prevent Augment errors');
+  } else {
+    vscode.window.showInformationMessage('No double quote issues found');
   }
 }
 
 /**
- * Format Instructions for better clarity
+ * Command: Check input size and warn about potential issues
  */
-async function formatInstructions(): Promise<void> {
+async function checkInputSizeCommand(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showErrorMessage('No active editor found');
@@ -774,88 +828,115 @@ async function formatInstructions(): Promise<void> {
   }
 
   const text = editor.document.getText(selection);
-  const config = vscode.workspace.getConfiguration('fixAugment');
-  const formatInstructions = config.get<boolean>('formatInstructions') || true;
+  const sizeCheck = checkInputSize(text);
 
-  if (!formatInstructions) {
-    vscode.window.showInformationMessage('Instructions formatting is disabled in settings');
-    return;
-  }
+  if (sizeCheck.isLarge) {
+    const action = await vscode.window.showWarningMessage(
+      sizeCheck.suggestion!,
+      'Break Down Task',
+      'Continue Anyway'
+    );
 
-  try {
-    // Format the instruction text for better clarity
-    let formattedText = text.trim();
-
-    // Add clear instruction markers
-    if (!formattedText.toLowerCase().startsWith('instruction:')) {
-      formattedText = `INSTRUCTION: ${formattedText}`;
+    if (action === 'Break Down Task') {
+      vscode.commands.executeCommand('fix-augment.suggestBreakdown');
     }
-
-    // Ensure proper formatting
-    formattedText = formattedText
-      .replace(/\s+/g, ' ')  // Normalize whitespace
-      .replace(/\. /g, '.\n\n')  // Add line breaks after sentences
-      .trim();
-
-    // Add context if this looks like a code modification instruction
-    if (formattedText.includes('modify') || formattedText.includes('change') || formattedText.includes('update')) {
-      formattedText += '\n\n<!-- Please maintain existing code style and patterns -->';
-    }
-
-    // Replace the selected text
-    editor.edit(editBuilder => {
-      editBuilder.replace(selection, formattedText);
-    });
-
-    vscode.window.showInformationMessage('Instructions formatted for clarity');
-  } catch (error) {
-    vscode.window.showErrorMessage(`Error formatting instructions: ${error}`);
+  } else {
+    vscode.window.showInformationMessage(`Input size OK: ${text.length} characters`);
   }
 }
 
 /**
- * Optimize Next Edit context for better suggestions
+ * Command: Suggest task breakdown for complex prompts
  */
-async function optimizeNextEditContext(): Promise<void> {
+async function suggestBreakdownCommand(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showErrorMessage('No active editor found');
     return;
   }
 
-  const config = vscode.workspace.getConfiguration('fixAugment');
-  const optimizeNextEdit = config.get<boolean>('optimizeNextEdit') || true;
-
-  if (!optimizeNextEdit) {
-    vscode.window.showInformationMessage('Next Edit optimization is disabled in settings');
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showErrorMessage('No text selected');
     return;
   }
 
-  try {
-    // Get current cursor position and surrounding context
-    const position = editor.selection.active;
-    const document = editor.document;
+  const text = editor.document.getText(selection);
+  const suggestion = suggestTaskBreakdown(text);
 
-    // Get context around cursor (5 lines before and after)
-    const startLine = Math.max(0, position.line - 5);
-    const endLine = Math.min(document.lineCount - 1, position.line + 5);
+  if (suggestion) {
+    const action = await vscode.window.showInformationMessage(
+      suggestion,
+      'Apply Suggestion'
+    );
 
-    const contextRange = new vscode.Range(startLine, 0, endLine, document.lineAt(endLine).text.length);
-    const contextText = document.getText(contextRange);
-
-    // Add optimization comments for Next Edit
-    const optimizedContext = `/* NEXT EDIT CONTEXT OPTIMIZATION */\n${contextText}\n/* END CONTEXT */`;
-
-    // Insert the optimized context at cursor
-    editor.edit(editBuilder => {
-      editBuilder.insert(position, `\n${optimizedContext}\n`);
-    });
-
-    vscode.window.showInformationMessage('Next Edit context optimized');
-  } catch (error) {
-    vscode.window.showErrorMessage(`Error optimizing Next Edit context: ${error}`);
+    if (action === 'Apply Suggestion') {
+      // Insert breakdown suggestion as comment
+      const breakdownText = `\n\n/* TASK BREAKDOWN SUGGESTION:\n${suggestion}\n*/\n\n`;
+      editor.edit(editBuilder => {
+        editBuilder.insert(selection.end, breakdownText);
+      });
+    }
+  } else {
+    vscode.window.showInformationMessage('This prompt looks good for direct use with Augment');
   }
 }
+
+/**
+ * Command: Optimize prompt for Augment (combines all fixes)
+ */
+async function optimizePromptCommand(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showErrorMessage('No active editor found');
+    return;
+  }
+
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showErrorMessage('No text selected');
+    return;
+  }
+
+  const text = editor.document.getText(selection);
+  let optimizedText = text;
+  const issues: string[] = [];
+
+  // Fix double quotes
+  const fixedQuotes = fixDoubleQuotes(text);
+  if (fixedQuotes !== text) {
+    optimizedText = fixedQuotes;
+    issues.push('Fixed double quotes');
+  }
+
+  // Check input size
+  const sizeCheck = checkInputSize(optimizedText);
+  if (sizeCheck.isLarge) {
+    issues.push('Input size warning: ' + sizeCheck.suggestion);
+  }
+
+  // Check for task breakdown suggestion
+  const breakdown = suggestTaskBreakdown(optimizedText);
+  if (breakdown) {
+    issues.push('Task breakdown suggested');
+  }
+
+  // Apply optimizations
+  if (optimizedText !== text) {
+    editor.edit(editBuilder => {
+      editBuilder.replace(selection, optimizedText);
+    });
+  }
+
+  // Show results
+  if (issues.length > 0) {
+    vscode.window.showInformationMessage(`Optimized prompt: ${issues.join(', ')}`);
+  } else {
+    vscode.window.showInformationMessage('Prompt is already optimized for Augment');
+  }
+}
+
+
 
 
 

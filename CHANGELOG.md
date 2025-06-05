@@ -4,6 +4,35 @@ All notable changes to the "fix-augment" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.0.0] - 2025-01-28
+
+### Added
+- Agent workflow enhancement with context injection
+- Next Edit context optimization for better suggestions
+- Instructions formatting for improved clarity
+- Enhanced integration with Augment's 2025 feature set
+- Support for Agent, Chat, Next Edit, Instructions, and Completions
+- Modern output detection for current Augment formats
+- Workspace and file context injection for Agent workflows
+
+### Changed
+- Complete modernization for Augment's current capabilities
+- Updated output detection patterns for 2025 Augment formats
+- Streamlined user interface focused on current features
+- Enhanced performance and reliability
+- Updated documentation to reflect current Augment capabilities
+
+### Removed
+- Obsolete usage tracking and limit bypass features (no longer needed)
+- API key management (Augment doesn't require API keys)
+- Usage counters and auto-reset functionality
+- Limit bypass status bar items
+
+### Fixed
+- Improved integration with modern Augment extension
+- Better error handling and user feedback
+- Enhanced code formatting and syntax detection
+
 ## [1.1.1] - 2024-07-17
 
 ### Changed

@@ -1,54 +1,69 @@
-# Fix Augment
+# Fix Augment - Fixes & Enhancements for Augment
 
-An enhanced unofficial extension for the Augment VSCode extension by MrXploisLite. This extension significantly improves the Agent workflows, input/output capabilities, and overall experience when working with Augment's powerful AI features including Agent, Chat, Next Edit, Instructions, and Completions.
+**🔧 Fixes common Augment issues and enhances your workflow**
 
-## Features
+Fix Augment addresses real problems reported by the Augment community and provides practical enhancements to improve your Augment VSCode experience.
 
-### Core Enhancements
-- **Enhanced Input Processing**: Automatically chunks large inputs to make them more digestible for Augment
-- **Smart Chunking**: Preserves context and code blocks when splitting large inputs
-- **Improved Output Formatting**: Formats Augment's output with better code highlighting and organization
-- **Syntax Detection**: Automatically detects and applies the correct language syntax highlighting
-- **Multiple Syntax Themes**: Choose from various syntax highlighting themes
-- **Auto-Formatting**: Automatically formats Augment outputs as they appear
-- **Code Block Optimization**: Special handling for code blocks to maintain their structure
+> **Note**: This extension works alongside the official [Augment VSCode extension](https://marketplace.visualstudio.com/items?itemName=augment.vscode-augment). Install Augment first, then add this for fixes and enhancements.
 
-### Agent Workflow Enhancements
-- **Agent Context Enhancement**: Automatically adds workspace and file context to improve Agent understanding
-- **Workflow Optimization**: Streamlines Agent tasks with better context markers and formatting
-- **Smart Context Injection**: Provides relevant workspace information to enhance Agent performance
+## 🔧 Fixes for Common Augment Issues
 
-### Next Edit & Instructions Support
-- **Next Edit Context Optimization**: Enhances context around cursor position for better Next Edit suggestions
-- **Instructions Formatting**: Automatically formats natural language instructions for better clarity
-- **Enhanced Integration**: Works seamlessly with Augment's latest features
+Based on community feedback and Discord reports, this extension addresses:
 
-### Productivity Features
-- **Highly Customizable**: Configure all aspects of the extension to suit your workflow
-- **Modern Integration**: Built for Augment's 2025 feature set including Agent, Chat, Next Edit, Instructions, and Completions
+### Double Quote Bug Fix
+- **Problem**: Augment fails with error when prompts contain double quotes (`"`)
+- **Fix**: Automatically escapes double quotes in prompts before sending to Augment
+- **Status**: ✅ Prevents "We encountered an issue sending your message" errors
+
+### Large Input Handling
+- **Problem**: "Too large input" errors causing credit consumption without results
+- **Fix**: Smart input chunking with context preservation
+- **Features**:
+  - Automatic input size detection
+  - Intelligent task breakdown suggestions
+  - Context-aware chunking that preserves code blocks
+
+### Task Breakdown Assistant
+- **Problem**: Complex tasks failing mid-way, consuming credits without completion
+- **Fix**: Proactive task breakdown suggestions
+- **Features**:
+  - Detects complex prompts that might fail
+  - Suggests optimal task breakdown strategies
+  - Provides templates for better prompting
+
+### Credit Protection
+- **Problem**: Credits consumed even when Augment fails to complete tasks
+- **Fix**: Pre-validation and optimization before sending to Augment
+- **Features**:
+  - Input validation before submission
+  - Prompt optimization suggestions
+  - Failure prediction and prevention
 
 ## Requirements
 
 - Visual Studio Code 1.99.0 or higher
-- Augment extension (augment.vscode-augment)
+- **[Augment extension](https://marketplace.visualstudio.com/items?itemName=augment.vscode-augment)** (required)
 
-## Extension Settings
+## Installation
 
-This extension contributes the following settings:
+1. **First**, install the official [Augment extension](https://marketplace.visualstudio.com/items?itemName=augment.vscode-augment)
+2. **Then**, install Fix Augment from the VSCode marketplace
+3. Restart VSCode to activate the enhancement layer
+4. You'll see "Fix Augment: Enhancement layer activated" when both extensions are working together
 
-### Core Settings
+## ⚙️ Settings
+
+Configure Fix Augment to match your workflow:
+
+### Fix Settings
 - `fixAugment.enabled`: Enable or disable the Fix Augment extension
-- `fixAugment.maxInputSize`: Maximum size of input to process at once (in characters)
-- `fixAugment.outputFormat`: Format to use for Augment outputs (default, enhanced, markdown, html)
-- `fixAugment.autoFormatOutput`: Automatically format Augment outputs as they appear
-- `fixAugment.syntaxTheme`: Syntax highlighting theme for code blocks (default, github, monokai, dracula, nord)
-- `fixAugment.smartChunking`: Use smart chunking to preserve context when splitting large inputs
-- `fixAugment.preserveCodeBlocks`: Keep code blocks intact when chunking large inputs
+- `fixAugment.autoFixDoubleQuotes`: Automatically fix double quotes to prevent Augment errors
+- `fixAugment.warnLargeInput`: Warn when input might be too large for Augment
+- `fixAugment.maxSafeInputSize`: Maximum safe input size in characters (default: 8000)
+- `fixAugment.suggestTaskBreakdown`: Suggest task breakdown for complex prompts
 
-### Agent & Workflow Settings
-- `fixAugment.enhanceAgent`: Enhance Agent workflows with better context and formatting
-- `fixAugment.optimizeNextEdit`: Optimize Next Edit suggestions with enhanced context
-- `fixAugment.formatInstructions`: Automatically format Instructions for better clarity
+### Output Settings
+- `fixAugment.outputFormat`: Format to use for Augment outputs (default, enhanced, markdown)
 
 ## Known Issues
 
@@ -103,28 +118,53 @@ This extension contributes the following settings:
 - Automatic chunking of large inputs
 - Syntax highlighting for common languages
 
-## How to Use
+## How It Works
 
-1. Install the extension
-2. Make sure you have the official Augment extension installed
-3. Select text in your editor
-4. Right-click and choose "Augment: Enhance Input" to optimize it for Augment
-5. After receiving output from Augment, select it and use "Augment: Format Output" to improve its formatting
+Fix Augment automatically detects when you're using Augment and provides enhancement hooks:
 
-## Commands
+### Automatic Enhancements
+- **Agent Context Injection**: Automatically adds workspace context when Agent starts
+- **Output Formatting**: Enhances Augment's output with better syntax highlighting
+- **Smart Detection**: Recognizes Agent, Chat, Next Edit, and Instructions workflows
 
-- **Augment: Enhance Input**: Process selected text to optimize it for Augment
-- **Augment: Format Output**: Format selected Augment output for better readability
-- **Augment: Toggle Enhancement**: Turn the extension on or off
-- **Augment: Smart Chunk Large Input**: Intelligently split large inputs while preserving context
-- **Augment: Apply Syntax Theme**: Change the syntax highlighting theme for code blocks
-- **Augment: Optimize Code Blocks**: Improve formatting of code blocks in the selection
-- **Augment: Set API Key**: Securely store your Augment API key
-- **Augment: Toggle Limit Bypass**: Enable or disable the limit bypass features
-- **Augment: Reset Usage Counter**: Manually reset the usage counter
+### Manual Enhancements
+1. **Select text** in your editor
+2. **Right-click** and choose from Fix Augment commands:
+   - "Augment: Enhance Input" - Optimize text for better Augment understanding
+   - "Augment: Format Output" - Improve formatting of Augment responses
+   - "Augment: Enhance Agent Workflow" - Add context for Agent tasks
+   - "Augment: Format Instructions" - Optimize natural language instructions
 
-## About the Author
+### Integration Benefits
+- **Seamless**: Works automatically with your existing Augment workflows
+- **Non-intrusive**: Enhances without changing Augment's core functionality
+- **Contextual**: Provides relevant workspace and file context to improve AI understanding
 
-This extension is developed and maintained by MrXploisLite. For support, feature requests, or bug reports, please visit the [GitHub repository](https://github.com/MrXploisLite/fix-augment).
+## 🛠️ Commands
 
-**Enjoy using Fix Augment!**
+### Primary Fix Commands
+- **Fix Augment: Optimize Prompt for Augment** - Applies all fixes and optimizations to selected text
+- **Fix Augment: Fix Double Quote Issues** - Escapes double quotes to prevent Augment errors
+- **Fix Augment: Check Input Size** - Warns if input might be too large and cause credit loss
+- **Fix Augment: Suggest Task Breakdown** - Provides breakdown suggestions for complex tasks
+
+### Utility Commands
+- **Fix Augment: Format Output** - Improves formatting of Augment responses
+- **Fix Augment: Toggle Enhancement** - Enable/disable the extension
+
+## Contributing
+
+Found a bug or have a feature request? Please visit our [GitHub repository](https://github.com/MrXploisLite/fix-augment) to:
+- Report issues
+- Suggest enhancements
+- Contribute code improvements
+
+## About
+
+This extension is developed and maintained by **Romy Rianata (MrXploisLite)** as an enhancement layer for the Augment ecosystem.
+
+**Disclaimer**: This is an unofficial extension that enhances the official Augment extension. It is not affiliated with or endorsed by Augment Computing.
+
+---
+
+**🎯 Supercharge your Augment workflows with Fix Augment!**

@@ -3,9 +3,9 @@
   "displayName": "Fix Augment",
   "description": "Enhanced Augment extension with improved Agent workflows, formatting, and productivity features by MrXploisLite",
   "version": "2.0.0",
-  "publisher": "MrXploisLite",
+  "publisher": "RomyRianata",
   "author": {
-    "name": "MrXploisLite"
+    "name": "Romy Rianata (MrXploisLite)"
   },
   "repository": {
     "type": "git",
@@ -15,7 +15,9 @@
     "vscode": "^1.99.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Formatters",
+    "Extension Packs"
   ],
   "keywords": [
     "augment",
@@ -24,8 +26,15 @@
     "chat",
     "completions",
     "productivity",
-    "formatting"
+    "formatting",
+    "enhancement",
+    "workflow",
+    "context"
   ],
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -33,40 +42,28 @@
   "contributes": {
     "commands": [
       {
-        "command": "fix-augment.enhanceInput",
-        "title": "Augment: Enhance Input"
+        "command": "fix-augment.fixDoubleQuotes",
+        "title": "Fix Augment: Fix Double Quote Issues"
+      },
+      {
+        "command": "fix-augment.checkInputSize",
+        "title": "Fix Augment: Check Input Size"
+      },
+      {
+        "command": "fix-augment.suggestBreakdown",
+        "title": "Fix Augment: Suggest Task Breakdown"
+      },
+      {
+        "command": "fix-augment.optimizePrompt",
+        "title": "Fix Augment: Optimize Prompt for Augment"
       },
       {
         "command": "fix-augment.formatOutput",
-        "title": "Augment: Format Output"
+        "title": "Fix Augment: Format Output"
       },
       {
         "command": "fix-augment.toggleEnhancement",
-        "title": "Augment: Toggle Enhancement"
-      },
-      {
-        "command": "fix-augment.smartChunk",
-        "title": "Augment: Smart Chunk Large Input"
-      },
-      {
-        "command": "fix-augment.applyTheme",
-        "title": "Augment: Apply Syntax Theme"
-      },
-      {
-        "command": "fix-augment.optimizeCodeBlocks",
-        "title": "Augment: Optimize Code Blocks"
-      },
-      {
-        "command": "fix-augment.enhanceAgent",
-        "title": "Augment: Enhance Agent Workflow"
-      },
-      {
-        "command": "fix-augment.formatInstructions",
-        "title": "Augment: Format Instructions"
-      },
-      {
-        "command": "fix-augment.optimizeNextEdit",
-        "title": "Augment: Optimize Next Edit Context"
+        "title": "Fix Augment: Toggle Enhancement"
       }
     ],
     "configuration": {
@@ -77,86 +74,72 @@
           "default": true,
           "description": "Enable or disable the Fix Augment extension"
         },
-        "fixAugment.maxInputSize": {
+        "fixAugment.autoFixDoubleQuotes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically fix double quotes to prevent Augment errors"
+        },
+        "fixAugment.warnLargeInput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when input might be too large for Augment"
+        },
+        "fixAugment.maxSafeInputSize": {
           "type": "number",
-          "default": 10000,
-          "description": "Maximum size of input to process at once (in characters)"
+          "default": 8000,
+          "description": "Maximum safe input size in characters (based on community feedback)"
+        },
+        "fixAugment.suggestTaskBreakdown": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest task breakdown for complex prompts"
         },
         "fixAugment.outputFormat": {
           "type": "string",
-          "enum": ["default", "enhanced", "markdown", "html"],
+          "enum": ["default", "enhanced", "markdown"],
           "default": "enhanced",
           "description": "Format to use for Augment outputs"
-        },
-        "fixAugment.autoFormatOutput": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically format Augment outputs as they appear"
-        },
-        "fixAugment.syntaxTheme": {
-          "type": "string",
-          "enum": ["default", "github", "monokai", "dracula", "nord"],
-          "default": "github",
-          "description": "Syntax highlighting theme for code blocks"
-        },
-        "fixAugment.smartChunking": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use smart chunking to preserve context when splitting large inputs"
-        },
-        "fixAugment.preserveCodeBlocks": {
-          "type": "boolean",
-          "default": true,
-          "description": "Keep code blocks intact when chunking large inputs"
-        },
-        "fixAugment.enhanceAgent": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enhance Agent workflows with better context and formatting"
-        },
-        "fixAugment.optimizeNextEdit": {
-          "type": "boolean",
-          "default": true,
-          "description": "Optimize Next Edit suggestions with enhanced context"
-        },
-        "fixAugment.formatInstructions": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically format Instructions for better clarity"
         }
       }
     },
     "menus": {
       "editor/context": [
         {
-          "command": "fix-augment.enhanceInput",
+          "command": "fix-augment.optimizePrompt",
           "when": "editorHasSelection",
           "group": "augment@1"
         },
         {
-          "command": "fix-augment.formatOutput",
+          "command": "fix-augment.fixDoubleQuotes",
           "when": "editorHasSelection",
           "group": "augment@2"
         },
         {
-          "command": "fix-augment.smartChunk",
+          "command": "fix-augment.checkInputSize",
           "when": "editorHasSelection",
           "group": "augment@3"
         },
         {
-          "command": "fix-augment.optimizeCodeBlocks",
+          "command": "fix-augment.suggestBreakdown",
           "when": "editorHasSelection",
           "group": "augment@4"
-        },
-        {
-          "command": "fix-augment.formatInstructions",
-          "when": "editorHasSelection",
-          "group": "augment@5"
         }
       ],
       "commandPalette": [
         {
-          "command": "fix-augment.enhanceInput",
+          "command": "fix-augment.optimizePrompt",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.fixDoubleQuotes",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.checkInputSize",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "fix-augment.suggestBreakdown",
           "when": "editorHasSelection"
         },
         {
@@ -164,28 +147,7 @@
           "when": "editorHasSelection"
         },
         {
-          "command": "fix-augment.smartChunk",
-          "when": "editorHasSelection"
-        },
-        {
-          "command": "fix-augment.optimizeCodeBlocks",
-          "when": "editorHasSelection"
-        },
-        {
-          "command": "fix-augment.formatInstructions",
-          "when": "editorHasSelection"
-        },
-        {
-          "command": "fix-augment.applyTheme"
-        },
-        {
           "command": "fix-augment.toggleEnhancement"
-        },
-        {
-          "command": "fix-augment.enhanceAgent"
-        },
-        {
-          "command": "fix-augment.optimizeNextEdit"
         }
       ]
     }
@@ -196,7 +158,9 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "dependencies": {
     "marked": "^12.0.0",
