@@ -72,6 +72,15 @@ Configure Fix Augment to match your workflow:
 
 ## Release Notes
 
+### 2.1.0
+
+- **🎯 Community-Driven Fixes**: Based on real issues from Augment Discord community
+- **🔧 Double Quote Bug Fix**: Prevents "We encountered an issue sending your message" errors
+- **⚠️ Large Input Protection**: Warns about inputs that might cause credit loss
+- **📋 Task Breakdown Assistant**: Helps break down complex tasks to prevent failures
+- **💰 Credit Protection**: Pre-validation to avoid wasted credits
+- **🧹 Focused Approach**: Removed speculative features, focused on real problems
+
 ### 2.0.0
 
 - **Major Update**: Complete modernization for Augment's 2025 feature set

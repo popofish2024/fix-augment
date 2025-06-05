@@ -4,7 +4,33 @@ All notable changes to the "fix-augment" extension will be documented in this fi
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [2.0.0] - 2025-01-28
+## [2.1.0] - 2025-06-05
+
+### Added
+- **Double Quote Bug Fix**: Automatically escapes double quotes to prevent "We encountered an issue sending your message" errors
+- **Large Input Protection**: Warns when input exceeds safe size (8000 chars) to prevent credit loss
+- **Task Breakdown Assistant**: Detects complex prompts and suggests breakdown strategies
+- **Credit Protection**: Pre-validation and optimization before sending to Augment
+- **Community-Driven Fixes**: Based on real issues reported in Augment Discord community
+
+### Changed
+- **Complete Focus Shift**: Now exclusively focused on fixing real Augment issues
+- **Streamlined Commands**: Removed speculative features, added practical fixes
+- **Evidence-Based Limits**: Input size limits based on community feedback (8000 chars)
+- **Simplified UI**: Clean interface focused on problem-solving
+
+### Removed
+- **Speculative Features**: Removed Agent enhancement, Next Edit optimization
+- **Unused Tracking**: Removed usage counters and API key management
+- **Future Use Features**: Removed all "for future use" functionality
+- **Complex Workflows**: Simplified to focus on core fixes
+
+### Fixed
+- **Publisher ID**: Corrected to match marketplace account (RomyRianata)
+- **Real-World Issues**: Addresses actual problems reported by Augment users
+- **Credit Waste Prevention**: Helps users avoid common pitfalls that consume credits
+
+## [2.0.0] - 2025-01-28 (Previous Release)
 
 ### Added
 - Agent workflow enhancement with context injection
