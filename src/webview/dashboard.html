@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Augment Dashboard</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            padding: 15px;
+            margin: 0;
+        }
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--vscode-widget-border);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .status-card {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--vscode-activityBarBadge-background);
+        }
+        .status-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-green { background-color: #4CAF50; }
+        .status-yellow { background-color: #FF9800; }
+        .status-red { background-color: #F44336; }
+        .status-text {
+            font-size: 13px;
+        }
+        .action-section {
+            margin-bottom: 20px;
+        }
+        .action-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: var(--vscode-activityBarBadge-background);
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .action-btn {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .action-btn:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        .action-btn.secondary {
+            background-color: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+        }
+        .action-btn.secondary:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground);
+        }
+        .metrics {
+            background-color: var(--vscode-textCodeBlock-background);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: var(--vscode-editor-font-family);
+            font-size: 12px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .metric-row:last-child {
+            margin-bottom: 0;
+        }
+        .refresh-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--vscode-foreground);
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard">🔄</button>
+    
+    <div class="dashboard-header">
+        <h2>🔧 Fix Augment Dashboard</h2>
+        <p>Smart Context & Process Management</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card">
+            <h4>🧠 Context Health</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="contextStatus"></div>
+                <span class="status-text" id="contextText">Healthy (5 exchanges)</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h4>📁 File Context</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="fileStatus"></div>
+                <span class="status-text" id="fileText">Active file detected</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h4>⏱️ Process Monitor</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="processStatus"></div>
+                <span class="status-text" id="processText">No active processes</span>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h4>🎯 Enhancement Status</h4>
+            <div class="status-indicator">
+                <div class="status-dot status-green" id="enhancementStatus"></div>
+                <span class="status-text" id="enhancementText">All systems active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <h3>🚀 Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="checkContextHealth()">Check Context</button>
+            <button class="action-btn" onclick="refreshContext()">Refresh Context</button>
+            <button class="action-btn" onclick="validateFileContext()">Validate File</button>
+            <button class="action-btn secondary" onclick="openSettings()">Settings</button>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <h3>🔧 Fix Tools</h3>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="optimizePrompt()">Optimize Prompt</button>
+            <button class="action-btn" onclick="fixDoubleQuotes()">Fix Quotes</button>
+            <button class="action-btn" onclick="checkInputSize()">Check Size</button>
+            <button class="action-btn" onclick="suggestBreakdown()">Suggest Breakdown</button>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <h3>📊 Session Metrics</h3>
+        <div class="metrics">
+            <div class="metric-row">
+                <span>Session Duration:</span>
+                <span id="sessionDuration">--</span>
+            </div>
+            <div class="metric-row">
+                <span>Context Exchanges:</span>
+                <span id="contextExchanges">--</span>
+            </div>
+            <div class="metric-row">
+                <span>Files Processed:</span>
+                <span id="filesProcessed">--</span>
+            </div>
+            <div class="metric-row">
+                <span>Last Context Refresh:</span>
+                <span id="lastRefresh">--</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        // Dashboard functions
+        function refreshDashboard() {
+            vscode.postMessage({ command: 'refreshDashboard' });
+        }
+
+        function checkContextHealth() {
+            vscode.postMessage({ command: 'checkContextHealth' });
+        }
+
+        function refreshContext() {
+            vscode.postMessage({ command: 'refreshContext' });
+        }
+
+        function validateFileContext() {
+            vscode.postMessage({ command: 'validateFileContext' });
+        }
+
+        function optimizePrompt() {
+            vscode.postMessage({ command: 'optimizePrompt' });
+        }
+
+        function fixDoubleQuotes() {
+            vscode.postMessage({ command: 'fixDoubleQuotes' });
+        }
+
+        function checkInputSize() {
+            vscode.postMessage({ command: 'checkInputSize' });
+        }
+
+        function suggestBreakdown() {
+            vscode.postMessage({ command: 'suggestBreakdown' });
+        }
+
+        function openSettings() {
+            vscode.postMessage({ command: 'openSettings' });
+        }
+
+        // Listen for messages from extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'updateStatus':
+                    updateStatus(message.data);
+                    break;
+                case 'updateMetrics':
+                    updateMetrics(message.data);
+                    break;
+            }
+        });
+
+        function updateStatus(data) {
+            // Update context status
+            const contextDot = document.getElementById('contextStatus');
+            const contextText = document.getElementById('contextText');
+            contextDot.className = `status-dot status-${data.context.status}`;
+            contextText.textContent = data.context.text;
+
+            // Update file status
+            const fileDot = document.getElementById('fileStatus');
+            const fileText = document.getElementById('fileText');
+            fileDot.className = `status-dot status-${data.file.status}`;
+            fileText.textContent = data.file.text;
+
+            // Update process status
+            const processDot = document.getElementById('processStatus');
+            const processText = document.getElementById('processText');
+            processDot.className = `status-dot status-${data.process.status}`;
+            processText.textContent = data.process.text;
+
+            // Update enhancement status
+            const enhancementDot = document.getElementById('enhancementStatus');
+            const enhancementText = document.getElementById('enhancementText');
+            enhancementDot.className = `status-dot status-${data.enhancement.status}`;
+            enhancementText.textContent = data.enhancement.text;
+        }
+
+        function updateMetrics(data) {
+            document.getElementById('sessionDuration').textContent = data.sessionDuration;
+            document.getElementById('contextExchanges').textContent = data.contextExchanges;
+            document.getElementById('filesProcessed').textContent = data.filesProcessed;
+            document.getElementById('lastRefresh').textContent = data.lastRefresh;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshDashboard, 30000);
+
+        // Initial load
+        refreshDashboard();
+    </script>
+</body>
+</html>
